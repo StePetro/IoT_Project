@@ -91,14 +91,30 @@ static void res_put_handler(coap_message_t *request, coap_message_t *response,
   char char_lum[max_char_len];
   size_t len = 0;
 
-
   len = coap_get_post_variable(request, "lum", &rcvd_msg);
-  if(len > 0 && len <= max_char_len){
+
+  if (len > 0 && len <= max_char_len) {
+
     memcpy(char_lum, rcvd_msg, len);
+    int tmp_lum = atoi(char_lum);
+
+    if (tmp_lum < 0 || tmp_lum > max_lum) {
+
+      LOG_INFO("Received invalid luminosity value\n");
+      // GESTION ERRORE
+
+    } else {
+
+      lum = tmp_lum;
+      LOG_INFO("Luminosity set to %u\n", lum);
+
+    }
+
+  } else {
+
+    LOG_INFO("Bad Request\n");
+    // GESTION ERRORE
+
   }
-
-  //lum = atoi(char_lum);
-
-  LOG_INFO("Luminosity set to %s\%\n", char_lum);
-
+  
 }
