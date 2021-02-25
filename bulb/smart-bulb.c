@@ -13,6 +13,7 @@
 #include "routing/routing.h"
 
 #include "sys/etimer.h"
+#include "os/dev/leds.h"
 
 /* Log configuration */
 #include "sys/log.h"
@@ -27,6 +28,7 @@ AUTOSTART_PROCESSES(&smart_bulb);
 
 /* Resources */
 extern coap_resource_t res_luminosity;
+extern coap_resource_t res_switch;
 
 /*---------------------------------------------------------------------------*/
 
@@ -35,29 +37,40 @@ PROCESS_THREAD(smart_bulb, ev, data) {
 
   PROCESS_BEGIN();
 
-  LOG_INFO("Smart bulb started...\n");
-
-  /* Check connettivity every 5 second */
-  static struct etimer et;
-  etimer_set(&et, CLOCK_SECOND*5);
-
-  while (!NETSTACK_ROUTING.node_is_reachable()) {
-
-    PROCESS_WAIT_EVENT_UNTIL(etimer_expired(&et));
-    LOG_INFO("BR not reachable...\n");
-    etimer_reset(&et);
-
-  }
-
-  LOG_INFO("Connected...\n");
-
   /* Resources Activation */
   coap_activate_resource(&res_luminosity, "luminosity");
+  coap_activate_resource(&res_switch, "switch");
 
-  LOG_INFO("Smart bulb ready\n");
+  LOG_INFO("Smart bulb started...\n");
+
+  /* Check connectivity every 5 second */
+  leds_set(LEDS_NUM_TO_MASK(LEDS_YELLOW));
+  static struct etimer connectivity_timer;
+  etimer_set(&connectivity_timer, CLOCK_SECOND*5);
+  static bool ready = false;
 
   while (1) {
-    PROCESS_WAIT_EVENT();
+
+    PROCESS_WAIT_EVENT_UNTIL(etimer_expired(&connectivity_timer));
+
+    if(!NETSTACK_ROUTING.node_is_reachable()){
+
+      leds_set(LEDS_NUM_TO_MASK(LEDS_YELLOW));
+      LOG_INFO("BR not reachable...\n");
+      ready = false;
+
+    }else{
+
+      if(!ready){
+        LOG_INFO("Smart bulb ready\n");
+        leds_set(LEDS_NUM_TO_MASK(LEDS_GREEN));
+        ready = true;
+      }
+
+    }
+
+    etimer_reset(&connectivity_timer);
+
   }
 
   PROCESS_END();
