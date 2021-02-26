@@ -6,6 +6,9 @@
 
 #include "os/dev/leds.h"
 
+// "status" variable
+#include "global-variables.h"
+
 /* Log configuration */
 #include "sys/log.h"
 #define LOG_MODULE "Bulb Switch Resource"
@@ -31,7 +34,7 @@ RESOURCE(res_switch, "",
 /*---------------------------------------------------------------------------*/
 
 // 1 = ON, 0 = OFF
-static bool status = 1;
+bool status = 1;
 static const size_t max_char_len = 3; // Three digits maximum
 
 /*---------------------------------------------------------------------------*/

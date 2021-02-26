@@ -1,0 +1,5 @@
+resources/RegisterResource.class
+actuators/Bulb$BulbSwitch.class
+AutoLightApp.class
+actuators/Bulb$BulbLuminosity.class
+actuators/Bulb.class

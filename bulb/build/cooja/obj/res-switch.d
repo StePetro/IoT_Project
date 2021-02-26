@@ -25,7 +25,7 @@ build/cooja/obj/res-switch.o: resources/res-switch.c \
  ../../os/net/app-layer/coap/coap-separate.h \
  ../../os/net/app-layer/coap/coap-observe-client.h ../../os/dev/leds.h \
  ../../os/dev/gpio-hal.h ../../arch/platform/cooja/./dev/gpio-hal-arch.h \
- ../../os/sys/log.h ../../os/sys/log-conf.h
+ global-variables.h ../../os/sys/log.h ../../os/sys/log-conf.h
 resources/res-switch.c :
  ../../os/net/app-layer/coap/module-macros.h :
  ../../os/net/app-layer/coap/coap-engine.h :
@@ -53,4 +53,4 @@ resources/res-switch.c :
  ../../os/net/app-layer/coap/coap-separate.h :
  ../../os/net/app-layer/coap/coap-observe-client.h ../../os/dev/leds.h :
  ../../os/dev/gpio-hal.h ../../arch/platform/cooja/./dev/gpio-hal-arch.h :
- ../../os/sys/log.h ../../os/sys/log-conf.h :
+ global-variables.h ../../os/sys/log.h ../../os/sys/log-conf.h :

@@ -12,8 +12,12 @@
 #include "net/ipv6/uip-debug.h"
 #include "routing/routing.h"
 
-#include "sys/etimer.h"
+#include "sys/ctimer.h"
 #include "os/dev/leds.h"
+#include "os/dev/button-hal.h"
+
+// "status" variable
+#include "global-variables.h"
 
 /* Log configuration */
 #include "sys/log.h"
@@ -32,6 +36,30 @@ extern coap_resource_t res_switch;
 
 /*---------------------------------------------------------------------------*/
 
+static struct ctimer connectivity_timer;
+static bool ready = false;
+
+/* Checks if node is connected to BR */
+static void check_connectivity(void*ptr){
+
+  if(!NETSTACK_ROUTING.node_is_reachable()){
+
+    leds_set(LEDS_NUM_TO_MASK(LEDS_YELLOW));
+    LOG_INFO("BR not reachable...\n");
+    ctimer_reset(&connectivity_timer);
+
+  }else{
+
+    LOG_INFO("Smart bulb ready\n");
+    leds_set(LEDS_NUM_TO_MASK(LEDS_GREEN));
+    ready = true;
+
+  }
+
+}
+
+/*---------------------------------------------------------------------------*/
+
 /* Process */
 PROCESS_THREAD(smart_bulb, ev, data) {
 
@@ -45,31 +73,31 @@ PROCESS_THREAD(smart_bulb, ev, data) {
 
   /* Check connectivity every 5 second */
   leds_set(LEDS_NUM_TO_MASK(LEDS_YELLOW));
-  static struct etimer connectivity_timer;
-  etimer_set(&connectivity_timer, CLOCK_SECOND*5);
-  static bool ready = false;
+  ctimer_set(&connectivity_timer, CLOCK_SECOND*5, check_connectivity, NULL);
 
   while (1) {
 
-    PROCESS_WAIT_EVENT_UNTIL(etimer_expired(&connectivity_timer));
+    PROCESS_YIELD();
 
-    if(!NETSTACK_ROUTING.node_is_reachable()){
+    if(ev==button_hal_release_event && ready){
 
-      leds_set(LEDS_NUM_TO_MASK(LEDS_YELLOW));
-      LOG_INFO("BR not reachable...\n");
-      ready = false;
+      LOG_INFO("Button click...\n");
 
-    }else{
+      if(status == 0){
 
-      if(!ready){
-        LOG_INFO("Smart bulb ready\n");
+        LOG_INFO("Switch set to ON\n");
         leds_set(LEDS_NUM_TO_MASK(LEDS_GREEN));
-        ready = true;
+
+      }else{
+
+        LOG_INFO("Switch set to OFF\n");
+        leds_set(LEDS_NUM_TO_MASK(LEDS_RED));
+
       }
 
-    }
+      status = !status;
 
-    etimer_reset(&connectivity_timer);
+    }
 
   }
 
