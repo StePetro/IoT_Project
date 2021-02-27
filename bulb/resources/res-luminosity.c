@@ -30,7 +30,7 @@ RESOURCE(res_luminosity, "",
 
 static uint8_t lum = 0;
 static const uint8_t max_lum = 100;
-static const size_t max_char_len = 3; // Three digits maximum
+static const size_t max_char_len = 4; // Three digits + end string
 
 /*---------------------------------------------------------------------------*/
 

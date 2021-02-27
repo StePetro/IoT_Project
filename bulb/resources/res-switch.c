@@ -105,8 +105,6 @@ static void res_put_handler(coap_message_t *request, coap_message_t *response,
 
     snprintf(char_on_off, max_char_len + 1, "%s", rcvd_msg); // +1 = end string
 
-    LOG_INFO("%s\n", char_on_off);
-
     if (strcmp(char_on_off, "ON") == 0 ) {
     
       status = 1;
