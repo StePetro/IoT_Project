@@ -1,5 +1,7 @@
-resources/RegisterResource.class
-actuators/Bulb$BulbSwitch.class
+smartDevices/Bulb.class
+smartDevices/Bulb$BulbLuminosity.class
+server/Server.class
+server/resources/RegisterResource.class
 AutoLightApp.class
-actuators/Bulb$BulbLuminosity.class
-actuators/Bulb.class
+smartDevices/Bulb$BulbSwitch.class
+smartDevices/SmartDevice.class

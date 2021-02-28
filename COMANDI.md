@@ -38,5 +38,5 @@ coap-client -m put coap://[fd00::202:2:2:2]/luminosity -e lum=100
 
 ---------------------APP------------------------------
 
-coap-client -m get coap://127.0.0.1:5683/register
-coap-client -m put coap://127.0.0.1:5683/register?type=bulb\&ip=fd00::202:2:2:2
+coap-client -m get coap://[fd00::202:2:2:2]/register
+coap-client -m put coap://[fd00::202:2:2:2]/register -e type=bulb\&ip=fd00::202:2:2:2
