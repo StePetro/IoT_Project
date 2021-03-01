@@ -2,4 +2,5 @@
 /home/osboxes/contiki-ng/IoT_Project/autolight-app/src/main/java/server/Server.java
 /home/osboxes/contiki-ng/IoT_Project/autolight-app/src/main/java/AutoLightApp.java
 /home/osboxes/contiki-ng/IoT_Project/autolight-app/src/main/java/smartDevices/SmartDevice.java
+/home/osboxes/contiki-ng/IoT_Project/autolight-app/src/main/java/register/Register.java
 /home/osboxes/contiki-ng/IoT_Project/autolight-app/src/main/java/smartDevices/Bulb.java

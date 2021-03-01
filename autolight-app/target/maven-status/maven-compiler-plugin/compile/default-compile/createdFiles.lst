@@ -1,5 +1,6 @@
 smartDevices/Bulb.class
 smartDevices/Bulb$BulbLuminosity.class
+register/Register.class
 server/Server.class
 server/resources/RegisterResource.class
 AutoLightApp.class

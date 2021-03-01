@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "lib/random.h"
 
 #include "coap-engine.h"
 #include "contiki.h"
@@ -14,13 +15,9 @@
 
 #include "sys/etimer.h"
 #include "os/dev/leds.h"
-#include "os/dev/button-hal.h"
 
 #define MAX_IP_LEN 39
 #define MAX_PAYLOAD_LEN 60
-
-// "status" variable
-#include "global-variables.h"
 
 #include "coap-blocking-api.h"
 #include "coap-engine.h"
@@ -28,14 +25,14 @@
 
 /* Log configuration */
 #include "sys/log.h"
-#define LOG_MODULE "Bulb"
+#define LOG_MODULE "Presence Sensor"
 #define LOG_LEVEL LOG_LEVEL_INFO
 
 /*---------------------------------------------------------------------------*/
 
 /* Declare and autostart process */
-PROCESS(smart_bulb, "Smart Bulb");
-AUTOSTART_PROCESSES(&smart_bulb);
+PROCESS(presence_sensor, "Presence Sensor");
+AUTOSTART_PROCESSES(&presence_sensor);
 
 /*---------------------------------------------------------------------------*/
 
@@ -59,7 +56,6 @@ void client_chunk_handler(coap_message_t *response) {
 
 /* Resources */
 extern coap_resource_t res_presence;
-extern coap_resource_t res_switch;
 
 /*---------------------------------------------------------------------------*/
 
@@ -76,8 +72,9 @@ static void check_connectivity(){
 
   }else{
 
-    LOG_INFO("Smart bulb connected...\n");
-    leds_set(LEDS_NUM_TO_MASK(LEDS_GREEN));
+    LOG_INFO("Presence Sensor connected...\n");
+    leds_toggle(LEDS_NUM_TO_MASK(LEDS_YELLOW));
+    leds_toggle(LEDS_NUM_TO_MASK(LEDS_RED));
     connected = true;
 
   }
@@ -87,7 +84,7 @@ static void check_connectivity(){
 /*---------------------------------------------------------------------------*/
 
 /* Process */
-PROCESS_THREAD(smart_bulb, ev, data) {
+PROCESS_THREAD(presence_sensor, ev, data) {
 
   PROCESS_BEGIN();
 
@@ -98,10 +95,9 @@ PROCESS_THREAD(smart_bulb, ev, data) {
 
 
   /* Resources Activation */
-  coap_activate_resource(&res_presence, "luminosity");
-  coap_activate_resource(&res_switch, "switch");
+  coap_activate_resource(&res_presence, "presence");
 
-  LOG_INFO("Smart bulb started...\n");
+  LOG_INFO("Presence Sensor started...\n");
 
   /* Check connectivity every 5 second */
   leds_set(LEDS_NUM_TO_MASK(LEDS_YELLOW));
@@ -114,7 +110,7 @@ PROCESS_THREAD(smart_bulb, ev, data) {
 
   /* Manage registration */
   char service_url[] = "/register";
-  char type[] = "BULB";
+  char type[] = "PR_SENS";
   char ip[MAX_IP_LEN];
   char payload[MAX_PAYLOAD_LEN];
   uiplib_ipaddr_snprint(ip,MAX_IP_LEN, &uip_ds6_if.addr_list[1].ipaddr);
@@ -129,32 +125,20 @@ PROCESS_THREAD(smart_bulb, ev, data) {
 
   }
 
-  LOG_INFO("Smart bulb registred and ready\n");
+  LOG_INFO("Presence sensor registred and ready\n");
 
-  /* Manage button click */
+  static struct etimer random_timer;
+
+  /* Manage random presence sensing */
   while (1) {
 
-    PROCESS_YIELD();
+    etimer_set(&random_timer, random_rand() % (CLOCK_SECOND*20) + 2*CLOCK_SECOND);
 
-    if(ev==button_hal_release_event){
+    PROCESS_WAIT_UNTIL(etimer_expired(&random_timer));
 
-      LOG_INFO("Button click...\n");
+    res_presence.trigger();
 
-      if(status == 0){
-
-        LOG_INFO("Switch set to ON\n");
-        leds_set(LEDS_NUM_TO_MASK(LEDS_GREEN));
-
-      }else{
-
-        LOG_INFO("Switch set to OFF\n");
-        leds_set(LEDS_NUM_TO_MASK(LEDS_RED));
-
-      }
-
-      status = !status;
-
-    }
+    leds_toggle(LEDS_NUM_TO_MASK(LEDS_RED));
 
   }
 

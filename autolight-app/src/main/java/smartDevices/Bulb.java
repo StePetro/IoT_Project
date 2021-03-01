@@ -7,7 +7,31 @@ import org.eclipse.californium.core.coap.MediaTypeRegistry;
 public class Bulb extends SmartDevice{
     // To interact with bulbs using coap 
 
-    public static int bulbCount = 0; 
+    private static int bulbCount = 0; 
+
+    private BulbSwitch bswitch;
+    private BulbLuminosity luminosity;
+
+    public Bulb(String ip){
+
+        bulbCount++;
+        count++;
+        bswitch = new BulbSwitch(ip);
+        luminosity = new BulbLuminosity(ip);
+
+    }
+
+    public BulbSwitch getSwitchResource(){
+        return bswitch;
+    }
+
+    public BulbLuminosity getLuminosityResource(){
+        return luminosity;
+    }
+
+    public static int getCount(){
+        return bulbCount;
+    }
 
     public class BulbSwitch{
         // Represent switch resource
@@ -65,20 +89,6 @@ public class Bulb extends SmartDevice{
             // Set bulb luminosity
             return client.put("lum="+amount, MediaTypeRegistry.TEXT_PLAIN);
         }
-
-    }
-
-    public BulbSwitch bswitch;
-    public BulbLuminosity luminosity;
-
-    public Bulb(String ip){
-
-        type = "bulb";
-        id = bulbCount;
-        bulbCount++;
-        count++;
-        bswitch = new BulbSwitch(ip);
-        luminosity = new BulbLuminosity(ip);
 
     }
     
