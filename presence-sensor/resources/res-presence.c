@@ -33,7 +33,7 @@ static void res_get_handler(coap_message_t *request, coap_message_t *response,
                             uint8_t *buffer, uint16_t preferred_size,
                             int32_t *offset) {
 
-  LOG_INFO("Handling get request...\n");
+  //LOG_INFO("Handling get request...\n");
 
   char msg[max_char_len];
 
@@ -56,6 +56,8 @@ static void res_get_handler(coap_message_t *request, coap_message_t *response,
 
 /* Changes presence state and notify observers */
 static void res_event_handler(void){
+
+  LOG_INFO("Notifying change in state...\n");
 
 	presence = !presence;
   coap_notify_observers(&res_presence);

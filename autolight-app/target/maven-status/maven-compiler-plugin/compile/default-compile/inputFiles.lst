@@ -4,3 +4,4 @@
 /home/osboxes/contiki-ng/IoT_Project/autolight-app/src/main/java/smartDevices/SmartDevice.java
 /home/osboxes/contiki-ng/IoT_Project/autolight-app/src/main/java/register/Register.java
 /home/osboxes/contiki-ng/IoT_Project/autolight-app/src/main/java/smartDevices/Bulb.java
+/home/osboxes/contiki-ng/IoT_Project/autolight-app/src/main/java/smartDevices/PresenceSensor.java

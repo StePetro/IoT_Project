@@ -11,7 +11,7 @@ import smartDevices.SmartDevice;
 
 public class Register {
 
-    private ArrayList<SmartDevice> devices = new ArrayList<SmartDevice>();
+    static private ArrayList<SmartDevice> devices = new ArrayList<SmartDevice>();
     private CoapClient client;
 
     public Register(String ip) {
@@ -39,7 +39,7 @@ public class Register {
 
             if(type_ip[0].equals("PR_SENS")){
                 devices.add(new PresenceSensor(type_ip[1]));
-                System.out.println("[INFO: Register] Presence sensor with ip: " + type_ip[1] + " added to register, total presence sensors registred: " + Bulb.getCount() );
+                System.out.println("[INFO: Register] Presence sensor with ip: " + type_ip[1] + " added to register, total presence sensors registred: " + PresenceSensor.getCount() );
             }
 
         }
@@ -48,7 +48,7 @@ public class Register {
 
     }
 
-    public ArrayList<SmartDevice> getRegistredDevices(){
+    static public ArrayList<SmartDevice> getRegistredDevices(){
         return devices;
     }
 

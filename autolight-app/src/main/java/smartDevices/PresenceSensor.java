@@ -10,6 +10,7 @@ public class PresenceSensor extends SmartDevice {
 
     private static int sensorsCount = 0;
     private CoapClient client;
+    private CoapObserveRelation observeRelation;
 
     public PresenceSensor(String ip) {
 
@@ -17,14 +18,21 @@ public class PresenceSensor extends SmartDevice {
         count++;
         client = new CoapClient("coap://[" + ip + "]/presence");
 
-        CoapObserveRelation relation = client.observe(new CoapHandler() {
+        observeRelation = client.observe(new CoapHandler() {
             public void onLoad(CoapResponse response) {
                 String content = response.getResponseText();
-                System.out.println("[INFO: Register] Presence sensor signals: " + content);
+                if(content.equals("T")){
+                    System.out.println("[INFO: Presence Sensor] Someone here, switching ON all lights...");
+                    Bulb.setAll("ON");
+                }
+                if(content.equals("F")){
+                    System.out.println("[INFO: Presence Sensor] No one here, switching OFF all lights...");
+                    Bulb.setAll("OFF");                    
+                }
             }
 
             public void onError() {
-                System.err.println("[ERROR: Register] Error in observing presence sensor");
+                System.err.println("[ERROR: Presence Sensor] Error in observing presence sensor");
             }
         });
 
@@ -32,6 +40,10 @@ public class PresenceSensor extends SmartDevice {
 
     public static int getCount() {
         return sensorsCount;
+    }
+
+    public CoapObserveRelation getObserveRelation() {
+        return observeRelation;
     }
 
     public String get() {

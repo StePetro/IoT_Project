@@ -1,8 +1,10 @@
 smartDevices/Bulb.class
+smartDevices/PresenceSensor.class
 smartDevices/Bulb$BulbLuminosity.class
 register/Register.class
 server/Server.class
 server/resources/RegisterResource.class
+smartDevices/PresenceSensor$1.class
 AutoLightApp.class
 smartDevices/Bulb$BulbSwitch.class
 smartDevices/SmartDevice.class
