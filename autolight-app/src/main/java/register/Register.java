@@ -3,30 +3,64 @@ package register;
 import java.util.ArrayList;
 
 import org.eclipse.californium.core.CoapClient;
+import org.eclipse.californium.core.CoapHandler;
+import org.eclipse.californium.core.CoapObserveRelation;
 import org.eclipse.californium.core.CoapResponse;
 
 import smartDevices.Bulb;
 import smartDevices.PresenceSensor;
 import smartDevices.SmartDevice;
 
-public class Register {
+public abstract class Register {
 
     static private ArrayList<SmartDevice> devices = new ArrayList<SmartDevice>();
-    private CoapClient client;
+    static private CoapClient client;
+    static private CoapObserveRelation observeRelation;
 
-    public Register(String ip) {
+    static public void start(String ip){
 
         client = new CoapClient("coap://[" + ip + "]/register");
-        refreshRegister();
+
+        observeRelation = client.observe(new CoapHandler() {
+
+            public void onLoad(CoapResponse response) {
+                String content = response.getResponseText();
+                refreshRegister(content);
+            }
+
+            public void onError() {
+                System.err.println("[ERROR: Register] Error in observing register");
+            }
+
+        });
 
     }
 
-    public void refreshRegister(){
+    static public void refreshRegister(){
+        client.get(new CoapHandler() {
+
+            public void onLoad(CoapResponse response) {
+                String content = response.getResponseText();
+                refreshRegister(content);
+            }
+
+            public void onError() {
+                System.err.println("[ERROR: PRESENCE SENSOR] Possible timeout");
+            }
+
+        });
+    }
+
+    static public void refreshRegister(String content){
 
         System.out.println("[INFO: Register] Refreshing register...");
+
+        devices.clear();
+        SmartDevice.refreshCount();
+        Bulb.refreshCount();
+        PresenceSensor.refreshCount();
     
-        CoapResponse response = client.get();
-        String[] descriptors = response.getResponseText().split(" ");
+        String[] descriptors = content.split(" ");
 
         for( String descriptor : descriptors){
 
@@ -50,6 +84,10 @@ public class Register {
 
     static public ArrayList<SmartDevice> getRegistredDevices(){
         return devices;
+    }
+
+    public CoapObserveRelation getObserveRelation() {
+        return observeRelation;
     }
 
 }

@@ -6,7 +6,7 @@ public class AutoLightApp {
 
 	public static void main(String[] args) {
 
-		Register reg = new Register("fd00::202:2:2:2");
+		Register.start("fd00::202:2:2:2");
 
 		
 		try {

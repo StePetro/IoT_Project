@@ -25,14 +25,14 @@
 
 /* Log configuration */
 #include "sys/log.h"
-#define LOG_MODULE "Presence Sensor"
+#define LOG_MODULE "Luminosity Sensor"
 #define LOG_LEVEL LOG_LEVEL_INFO
 
 /*---------------------------------------------------------------------------*/
 
 /* Declare and autostart process */
-PROCESS(presence_sensor, "Presence Sensor");
-AUTOSTART_PROCESSES(&presence_sensor);
+PROCESS(luminosity_sensor, "Presence Sensor");
+AUTOSTART_PROCESSES(&luminosity_sensor);
 
 /*---------------------------------------------------------------------------*/
 
@@ -55,7 +55,7 @@ void client_chunk_handler(coap_message_t *response) {
 /*---------------------------------------------------------------------------*/
 
 /* Resources */
-extern coap_resource_t res_presence;
+extern coap_resource_t res_luminosity;
 
 /*---------------------------------------------------------------------------*/
 
@@ -72,8 +72,8 @@ static void check_connectivity(){
 
   }else{
 
-    LOG_INFO("Presence Sensor connected...\n");
-    leds_set(LEDS_NUM_TO_MASK(LEDS_RED));
+    LOG_INFO("Luminosity Sensor connected...\n");
+    leds_toggle(LEDS_NUM_TO_MASK(LEDS_YELLOW));
     connected = true;
 
   }
@@ -83,7 +83,7 @@ static void check_connectivity(){
 /*---------------------------------------------------------------------------*/
 
 /* Process */
-PROCESS_THREAD(presence_sensor, ev, data) {
+PROCESS_THREAD(luminosity_sensor, ev, data) {
 
   PROCESS_BEGIN();
 
@@ -94,9 +94,9 @@ PROCESS_THREAD(presence_sensor, ev, data) {
 
 
   /* Resources Activation */
-  coap_activate_resource(&res_presence, "presence");
+  coap_activate_resource(&res_luminosity, "luminosity");
 
-  LOG_INFO("Presence Sensor started...\n");
+  LOG_INFO("Luminosity Sensor started...\n");
 
   /* Check connectivity every 5 second */
   leds_set(LEDS_NUM_TO_MASK(LEDS_YELLOW));
@@ -109,7 +109,7 @@ PROCESS_THREAD(presence_sensor, ev, data) {
 
   /* Manage registration */
   char service_url[] = "/register";
-  char type[] = "PR_SENS";
+  char type[] = "LUM_SENS";
   char ip[MAX_IP_LEN];
   char payload[MAX_PAYLOAD_LEN];
   uiplib_ipaddr_snprint(ip,MAX_IP_LEN, &uip_ds6_if.addr_list[1].ipaddr);
@@ -124,18 +124,18 @@ PROCESS_THREAD(presence_sensor, ev, data) {
 
   }
 
-  LOG_INFO("Presence sensor registred and ready\n");
+  LOG_INFO("Luminosity sensor registred and ready\n");
 
   static struct etimer random_timer;
 
-  /* Manage random presence sensing */
+  /* Manage random luminosity sensing */
   while (1) {
 
     etimer_set(&random_timer, random_rand() % (CLOCK_SECOND*20) + 2*CLOCK_SECOND);
 
     PROCESS_WAIT_UNTIL(etimer_expired(&random_timer));
 
-    res_presence.trigger();
+    res_luminosity.trigger();
 
     leds_toggle(LEDS_NUM_TO_MASK(LEDS_RED));
 

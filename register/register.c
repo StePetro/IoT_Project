@@ -12,8 +12,11 @@
 #include "net/ipv6/uip-debug.h"
 #include "routing/routing.h"
 
+// "new_registration" variable
+#include "global-variables.h"
+
 /* Log configuration */
-#include "sys/log.h"
+#include "sys/log.h" 
 #define LOG_MODULE "Register"
 #define LOG_LEVEL LOG_LEVEL_INFO
 
@@ -27,6 +30,7 @@ AUTOSTART_PROCESSES(&register_process);
 
 /* Resources */
 extern coap_resource_t res_register;
+bool new_registration = false;
 
 /*---------------------------------------------------------------------------*/
 
@@ -65,9 +69,19 @@ PROCESS_THREAD(register_process, ev, data) {
   /* Check connectivity every 5 second */
   ctimer_set(&connectivity_timer, CLOCK_SECOND*5, check_connectivity, NULL);
 
+  /* Check new registration */
+  static struct etimer register_check_timer;
+  etimer_set(&register_check_timer, CLOCK_SECOND);
+
   while (1) {
 
-    PROCESS_YIELD();
+    PROCESS_WAIT_EVENT_UNTIL(etimer_expired(&register_check_timer));
+
+    if(new_registration){
+      res_register.trigger();
+    }
+
+    etimer_reset(&register_check_timer);
 
   }
 

@@ -22,20 +22,25 @@ public class Bulb extends SmartDevice {
 
         this.ip = ip;
         bulbCount++;
-        count++;
+        SmartDevice.increaseCount();
         bswitch = new BulbSwitch(ip);
         luminosity = new BulbLuminosity(ip);
 
     }
 
-    public static void setAll(String status) {
+    public static void refreshCount(){
+        bulbCount = 0;
+    }
+
+    public static void setAllSwitches(String status) {
 
         ArrayList<SmartDevice> register = Register.getRegistredDevices();
 
         for (SmartDevice device : register) {
             if (device.getClass() == Bulb.class) {
                 Bulb bulb = (Bulb) device;
-                bulb.getSwitchResource().set(status);;
+                bulb.getSwitchResource().set(status);
+                ;
             }
         }
 
@@ -66,24 +71,35 @@ public class Bulb extends SmartDevice {
             client = new CoapClient("coap://[" + ip + "]/switch");
         }
 
-        public CoapResponse toggle() {
-            // Set on if off or off if on
-            return client.post("", MediaTypeRegistry.TEXT_PLAIN);
+        public void toggle() {
+            // ASYNC switch toggle
+            client.post(new CoapHandler() {
+
+                public void onLoad(CoapResponse response) {
+                    String content = response.getResponseText();
+                    System.out.println("[INFO: BULB " + ip + "] Switch toggle response: " + content);
+                }
+
+                public void onError() {
+                    System.err.println("[ERROR: BULB " + ip + "] Possible timeout");
+                }
+
+            }, "", MediaTypeRegistry.TEXT_PLAIN);
         }
 
         public void get() {
             // ASYNC Get current bulb status [on/off]
             client.get(new CoapHandler() {
+
                 public void onLoad(CoapResponse response) {
                     String content = response.getResponseText();
-                    if(!content.isBlank()){
-                        System.out.println("[INFO: BULB " + ip + "] " + content);
-                    }
+                    System.out.println("[INFO: BULB " + ip + "] Switch get response: " + content);
                 }
 
                 public void onError() {
-                    System.err.println("[ERROR: BULB " + ip + "] ERROR");
+                    System.err.println("[ERROR: BULB " + ip + "] Possible timeout");
                 }
+
             });
         }
 
@@ -93,11 +109,11 @@ public class Bulb extends SmartDevice {
 
                 public void onLoad(CoapResponse response) {
                     String content = response.getResponseText();
-                    System.out.println("[INFO: BULB " + ip + "] " + content);
+                    System.out.println("[INFO: BULB " + ip + "] Switch set response: " + content);
                 }
 
                 public void onError() {
-                    System.err.println("[ERROR: BULB " + ip + "] ERROR");
+                    System.err.println("[ERROR: BULB " + ip + "] Possible timeout");
                 }
 
             }, "status=" + status, MediaTypeRegistry.TEXT_PLAIN);
@@ -114,25 +130,68 @@ public class Bulb extends SmartDevice {
             client = new CoapClient("coap://[" + ip + "]/luminosity");
         }
 
-        public CoapResponse increase(int amount) {
-            // Decrease luminosity
-            return client.post("+=" + amount, MediaTypeRegistry.TEXT_PLAIN);
+        public void increase(int amount) {
+            // ASYNC Decrease luminosity
+            client.post(new CoapHandler() {
+
+                public void onLoad(CoapResponse response) {
+                    String content = response.getResponseText();
+                    System.out.println("[INFO: BULB " + ip + "] Luminosity increase response: " + content);
+                }
+
+                public void onError() {
+                    System.err.println("[ERROR: BULB " + ip + "] Possible timeout");
+                }
+
+            },"+=" + amount, MediaTypeRegistry.TEXT_PLAIN);
         }
 
-        public CoapResponse decrease(int amount) {
-            // Increase luminosity
-            return client.post("-=" + amount, MediaTypeRegistry.TEXT_PLAIN);
+        public void decrease(int amount) {
+            // ASYNC Increase luminosity
+            client.post(new CoapHandler() {
+
+                public void onLoad(CoapResponse response) {
+                    String content = response.getResponseText();
+                    System.out.println("[INFO: BULB " + ip + "] Luminosity decrease response: " + content);
+                }
+
+                public void onError() {
+                    System.err.println("[ERROR: BULB " + ip + "] Possible timeout");
+                }
+
+            },"-=" + amount, MediaTypeRegistry.TEXT_PLAIN);
         }
 
-        public String get() {
-            // Get current bulb luminosity
-            CoapResponse response = client.get();
-            return response.getResponseText();
+        public void get() {
+            // ASYNC Get current bulb luminosity
+            client.get(new CoapHandler() {
+
+                public void onLoad(CoapResponse response) {
+                    String content = response.getResponseText();
+                    System.out.println("[INFO: BULB " + ip + "] Luminosity get response: " + content);
+                }
+
+                public void onError() {
+                    System.err.println("[ERROR: BULB " + ip + "] Possible timeout");
+                }
+
+            });            
         }
 
-        public CoapResponse set(int amount) {
-            // Set bulb luminosity
-            return client.put("lum=" + amount, MediaTypeRegistry.TEXT_PLAIN);
+        public void set(int amount) {
+            // ASYNC Set bulb luminosity
+            client.put(new CoapHandler() {
+
+                public void onLoad(CoapResponse response) {
+                    String content = response.getResponseText();
+                    System.out.println("[INFO: BULB " + ip + "] Luminosity set response: " + content);
+                }
+
+                public void onError() {
+                    System.err.println("[ERROR: BULB " + ip + "] Possible timeout");
+                }
+
+            },"lum=" + amount, MediaTypeRegistry.TEXT_PLAIN);
         }
 
     }

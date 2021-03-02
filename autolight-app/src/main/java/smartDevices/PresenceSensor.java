@@ -15,27 +15,31 @@ public class PresenceSensor extends SmartDevice {
     public PresenceSensor(String ip) {
 
         sensorsCount++;
-        count++;
+        SmartDevice.increaseCount();
         client = new CoapClient("coap://[" + ip + "]/presence");
 
         observeRelation = client.observe(new CoapHandler() {
             public void onLoad(CoapResponse response) {
                 String content = response.getResponseText();
                 if(content.equals("T")){
-                    System.out.println("[INFO: Presence Sensor] Someone here, switching ON all lights...");
-                    Bulb.setAll("ON");
+                    System.out.println("[INFO: PRESENCE SENSOR] Someone here, switching ON all lights...");
+                    Bulb.setAllSwitches("ON");
                 }
                 if(content.equals("F")){
-                    System.out.println("[INFO: Presence Sensor] No one here, switching OFF all lights...");
-                    Bulb.setAll("OFF");                    
+                    System.out.println("[INFO: PRESENCE SENSOR] No one here, switching OFF all lights...");
+                    Bulb.setAllSwitches("OFF");                    
                 }
             }
 
             public void onError() {
-                System.err.println("[ERROR: Presence Sensor] Error in observing presence sensor");
+                System.err.println("[ERROR: PRESENCE SENSOR] Error in observing presence sensor");
             }
         });
 
+    }
+
+    public static void refreshCount(){
+        sensorsCount = 0;
     }
 
     public static int getCount() {
@@ -46,10 +50,20 @@ public class PresenceSensor extends SmartDevice {
         return observeRelation;
     }
 
-    public String get() {
+    public void get() {
         // Get current presence status [T/F]
-        CoapResponse response = client.get();
-        return response.getResponseText();
+        client.get(new CoapHandler() {
+
+            public void onLoad(CoapResponse response) {
+                String content = response.getResponseText();
+                System.out.println("[INFO: PRESENCE SENSOR] Get response: " + content);
+            }
+
+            public void onError() {
+                System.err.println("[ERROR: PRESENCE SENSOR] Possible timeout");
+            }
+
+        });
     }
 
 }

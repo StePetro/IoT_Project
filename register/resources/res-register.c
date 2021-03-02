@@ -4,6 +4,9 @@
 
 #include "coap-engine.h"
 
+// "new_registration" variable
+#include "global-variables.h"
+
 /* Log configuration */
 #include "sys/log.h"
 #define LOG_MODULE "Register Resource"
@@ -13,7 +16,7 @@
 #define MAX_DEVICES 40
 #define MAX_IP_LEN 39
 #define MAX_TYPE_LEN 10
-#define MAX_DEVICE_DESCRIPTOR_LEN 50 //type-ip
+#define MAX_DEVICE_DESCRIPTOR_LEN 50 //type-ip 
 
 /*---------------------------------------------------------------------------*/
 
@@ -25,13 +28,16 @@ static void res_put_handler(coap_message_t *request, coap_message_t *response,
                             uint8_t *buffer, uint16_t preferred_size,
                             int32_t *offset);
 
-RESOURCE(res_register, "",
-         res_get_handler, NULL, res_put_handler, NULL);
+static void res_event_handler(void);
+
+EVENT_RESOURCE(res_register, "",
+         res_get_handler, NULL, res_put_handler, NULL, res_event_handler);
 
 /*---------------------------------------------------------------------------*/
 
 static char reg[MAX_DEVICES][MAX_DEVICE_DESCRIPTOR_LEN];
 static int devices_count = 0;
+bool new_registration;
 
 /*---------------------------------------------------------------------------*/
 
@@ -102,6 +108,7 @@ static void res_put_handler(coap_message_t *request, coap_message_t *response,
     devices_count++;
     LOG_INFO("%s added to register, total devices: %u\n", reg[devices_count - 1], devices_count);
     coap_set_status_code(response, CHANGED_2_04);
+    new_registration = true;
 
   }else{
 
@@ -109,5 +116,15 @@ static void res_put_handler(coap_message_t *request, coap_message_t *response,
     coap_set_status_code(response, BAD_REQUEST_4_00);
 
   }
+
+}
+
+/*---------------------------------------------------------------------------*/
+
+/* Notify new registration */
+static void res_event_handler(void){
+
+  new_registration = false;
+  coap_notify_observers(&res_register);
 
 }
