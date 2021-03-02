@@ -8,6 +8,7 @@ import org.eclipse.californium.core.CoapObserveRelation;
 import org.eclipse.californium.core.CoapResponse;
 
 import smartDevices.Bulb;
+import smartDevices.LuminositySensor;
 import smartDevices.PresenceSensor;
 import smartDevices.SmartDevice;
 
@@ -74,6 +75,11 @@ public abstract class Register {
             if(type_ip[0].equals("PR_SENS")){
                 devices.add(new PresenceSensor(type_ip[1]));
                 System.out.println("[INFO: Register] Presence sensor with ip: " + type_ip[1] + " added to register, total presence sensors registred: " + PresenceSensor.getCount() );
+            }
+
+            if(type_ip[0].equals("LUM_SENS")){
+                devices.add(new LuminositySensor(type_ip[1]));
+                System.out.println("[INFO: Register] Luminosity sensor with ip: " + type_ip[1] + " added to register, total luminosity sensors registred: " + LuminositySensor.getCount() );
             }
 
         }

@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "lib/random.h"
+#include <math.h>
 
 #include "coap-engine.h"
 #include "contiki.h"
@@ -15,6 +15,9 @@
 
 #include "sys/etimer.h"
 #include "os/dev/leds.h"
+
+/* Luminosity variables */
+#include "global-variables.h"
 
 #define MAX_IP_LEN 39
 #define MAX_PAYLOAD_LEN 60
@@ -31,7 +34,7 @@
 /*---------------------------------------------------------------------------*/
 
 /* Declare and autostart process */
-PROCESS(luminosity_sensor, "Presence Sensor");
+PROCESS(luminosity_sensor, "Luminosity Sensor");
 AUTOSTART_PROCESSES(&luminosity_sensor);
 
 /*---------------------------------------------------------------------------*/
@@ -56,6 +59,9 @@ void client_chunk_handler(coap_message_t *response) {
 
 /* Resources */
 extern coap_resource_t res_luminosity;
+int external_luminosity;
+int actual_luminosity;
+int bulbs_luminosity;
 
 /*---------------------------------------------------------------------------*/
 
@@ -127,17 +133,39 @@ PROCESS_THREAD(luminosity_sensor, ev, data) {
   LOG_INFO("Luminosity sensor registred and ready\n");
 
   static struct etimer random_timer;
+  static bool increase = true;
 
   /* Manage random luminosity sensing */
   while (1) {
 
-    etimer_set(&random_timer, random_rand() % (CLOCK_SECOND*20) + 2*CLOCK_SECOND);
+    etimer_set(&random_timer, rand()%(CLOCK_SECOND*60) + 10*CLOCK_SECOND);
 
     PROCESS_WAIT_UNTIL(etimer_expired(&random_timer));
 
-    res_luminosity.trigger();
+    /* Gradually increase and decrease external luminosity */
+    if(increase){
+      int tmp_lum = floor(external_luminosity + rand()%10 + 1);
+      if(tmp_lum>MAX_LUMINOSITY){
+        external_luminosity = MAX_LUMINOSITY;
+        increase = false;
+      }else{
+        external_luminosity = tmp_lum;
+      }
+    }else{
+      int tmp_lum = floor(external_luminosity - rand()%10 - 1);
+      if(tmp_lum<0){
+        external_luminosity = 0;
+        increase = true;
+      }else{
+        external_luminosity = tmp_lum;
+      }
+    }
 
-    leds_toggle(LEDS_NUM_TO_MASK(LEDS_RED));
+    actual_luminosity = external_luminosity + bulbs_luminosity;
+
+    LOG_INFO("Luminosity value changed at %u\n", actual_luminosity);
+
+    res_luminosity.trigger();
 
   }
 

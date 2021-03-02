@@ -57,7 +57,7 @@ static void res_get_handler(coap_message_t *request, coap_message_t *response,
 /* Changes presence state and notify observers */
 static void res_event_handler(void){
 
-  if(presence){
+  if(!presence){
     LOG_INFO("Notifying that someone is here...\n");
   }else{
     LOG_INFO("Notifying that no one is here...\n");

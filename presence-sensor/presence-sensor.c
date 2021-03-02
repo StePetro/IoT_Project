@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "lib/random.h"
+#include <math.h>
 
 #include "coap-engine.h"
 #include "contiki.h"
@@ -131,7 +131,7 @@ PROCESS_THREAD(presence_sensor, ev, data) {
   /* Manage random presence sensing */
   while (1) {
 
-    etimer_set(&random_timer, random_rand() % (CLOCK_SECOND*20) + 2*CLOCK_SECOND);
+    etimer_set(&random_timer, rand()%(CLOCK_SECOND*60) + 10*CLOCK_SECOND);
 
     PROCESS_WAIT_UNTIL(etimer_expired(&random_timer));
 

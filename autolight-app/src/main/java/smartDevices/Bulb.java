@@ -40,11 +40,48 @@ public class Bulb extends SmartDevice {
             if (device.getClass() == Bulb.class) {
                 Bulb bulb = (Bulb) device;
                 bulb.getSwitchResource().set(status);
-                ;
             }
         }
 
     }
+
+    public static void setAllToDesiredLuminosity(int actualLum, int desiredLum) {
+
+        ArrayList<SmartDevice> register = Register.getRegistredDevices();
+        int newLum = 0;
+        
+
+        for (SmartDevice device : register) {
+            if (device.getClass() == Bulb.class) {
+                Bulb bulb = (Bulb) device;
+                int bulbLum = bulb.getLuminosityResource().getValue();
+                if(actualLum<desiredLum){
+                    if(bulbLum+desiredLum-actualLum < 100){
+                        newLum = bulbLum+desiredLum-actualLum;
+                    }else{
+                        newLum = 100;
+                    }
+                }else{
+                    if(bulbLum-(actualLum-desiredLum) > 0){
+                        newLum = bulbLum-(actualLum-desiredLum);
+                    }else{
+                        newLum = 0;
+                    }
+                }
+                bulb.getLuminosityResource().set(newLum);
+                System.out.println("B "+bulbLum+" D "+desiredLum+" A "+actualLum+" N "+newLum);
+            }
+        }
+
+        for (SmartDevice device : register) {
+            /* for coherency */
+            if (device.getClass() == LuminositySensor.class) {
+                LuminositySensor ls = (LuminositySensor) device;
+                ls.setBulbLuminosity(newLum);
+            }
+        }
+
+	}
 
     public BulbSwitch getSwitchResource() {
         return bswitch;
@@ -125,9 +162,15 @@ public class Bulb extends SmartDevice {
         // Represent luminosity resource
 
         private CoapClient client;
+        private int value;
 
         protected BulbLuminosity(String ip) {
             client = new CoapClient("coap://[" + ip + "]/luminosity");
+            get();
+        }
+
+        public int getValue() {
+            return value;
         }
 
         public void increase(int amount) {
@@ -168,7 +211,8 @@ public class Bulb extends SmartDevice {
 
                 public void onLoad(CoapResponse response) {
                     String content = response.getResponseText();
-                    System.out.println("[INFO: BULB " + ip + "] Luminosity get response: " + content);
+                    System.out.println("[INFO: BULB " + ip + "] Luminosity value is: " + content);
+                    value = Integer.parseInt(content);
                 }
 
                 public void onError() {
@@ -184,7 +228,8 @@ public class Bulb extends SmartDevice {
 
                 public void onLoad(CoapResponse response) {
                     String content = response.getResponseText();
-                    System.out.println("[INFO: BULB " + ip + "] Luminosity set response: " + content);
+                    System.out.println("[INFO: BULB " + ip + "] New luminosity value: " + content);
+                    value = Integer.parseInt(content);
                 }
 
                 public void onError() {

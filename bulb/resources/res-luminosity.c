@@ -152,6 +152,16 @@ static void res_put_handler(coap_message_t *request, coap_message_t *response,
       LOG_INFO("Luminosity set to %u\n", lum);
       coap_set_status_code(response, CHANGED_2_04);
 
+      /* Send new luminosity value in response */
+      char msg[max_char_len];
+      snprintf(msg,max_char_len,"%u",lum);
+      size_t len = strlen(msg);
+      memcpy(buffer, (const void*) msg, len);
+
+      coap_set_header_content_format(response, TEXT_PLAIN);
+      coap_set_header_etag(response, (uint8_t *)&len, 1);
+      coap_set_payload(response, buffer, len);
+
     }
 
   } else {
