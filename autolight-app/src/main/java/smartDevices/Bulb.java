@@ -8,11 +8,13 @@ import org.eclipse.californium.core.CoapResponse;
 import org.eclipse.californium.core.coap.MediaTypeRegistry;
 
 import register.Register;
+import uilities.OutputWindow;
 
 public class Bulb extends SmartDevice {
     // To interact with bulbs using coap
 
     private static int bulbCount = 0;
+    private static ArrayList<String> IPs = new ArrayList<String>();
 
     private BulbSwitch bswitch;
     private BulbLuminosity luminosity;
@@ -25,63 +27,86 @@ public class Bulb extends SmartDevice {
         SmartDevice.increaseCount();
         bswitch = new BulbSwitch(ip);
         luminosity = new BulbLuminosity(ip);
+        IPs.add(ip);
 
     }
 
-    public static void refreshCount(){
+    public static ArrayList<String> getIPs() {
+        return IPs;
+    }
+
+    public static void refreshCount() {
         bulbCount = 0;
     }
 
     public static void setAllSwitches(String status) {
 
-        ArrayList<SmartDevice> register = Register.getRegistredDevices();
+        ArrayList<Bulb> bulbs = Register.getRegistredBulbs();
 
-        for (SmartDevice device : register) {
-            if (device.getClass() == Bulb.class) {
-                Bulb bulb = (Bulb) device;
-                bulb.getSwitchResource().set(status);
-            }
+        for (Bulb bulb : bulbs) {
+            bulb.getSwitchResource().set(status);
+        }
+
+    }
+
+    public static void SetAllLuminosities(int amount) {
+
+        ArrayList<Bulb> bulbs = Register.getRegistredBulbs();
+
+        for (Bulb bulb : bulbs) {
+            bulb.getLuminosityResource().set(amount);
+        }
+
+        for (LuminositySensor ls : Register.getRegistredLuminositySensors()) {
+            /* for coherency */
+            ls.setBulbLuminosity(amount);
         }
 
     }
 
     public static void setAllToDesiredLuminosity(int actualLum, int desiredLum) {
 
-        ArrayList<SmartDevice> register = Register.getRegistredDevices();
-        int newLum = 0;
-        
+        if (Bulb.getCount() > 0) {
 
-        for (SmartDevice device : register) {
-            if (device.getClass() == Bulb.class) {
-                Bulb bulb = (Bulb) device;
+            ArrayList<Bulb> bulbs = Register.getRegistredBulbs();
+            ArrayList<LuminositySensor> lumSensors = Register.getRegistredLuminositySensors();
+            int totalLum = 0;
+            int externalMeanLum = 0;
+
+            for (Bulb bulb : bulbs) {
                 int bulbLum = bulb.getLuminosityResource().getValue();
-                if(actualLum<desiredLum){
-                    if(bulbLum+desiredLum-actualLum < 100){
-                        newLum = bulbLum+desiredLum-actualLum;
-                    }else{
-                        newLum = 100;
-                    }
-                }else{
-                    if(bulbLum-(actualLum-desiredLum) > 0){
-                        newLum = bulbLum-(actualLum-desiredLum);
-                    }else{
-                        newLum = 0;
-                    }
+                int externLum = actualLum - bulbLum;
+                externalMeanLum += externLum;
+                int newLum = 0;
+                if (externLum < desiredLum) {
+                    newLum = desiredLum - externLum;
+                } else {
+                    newLum = 0;
                 }
-                bulb.getLuminosityResource().set(newLum);
-                System.out.println("B "+bulbLum+" D "+desiredLum+" A "+actualLum+" N "+newLum);
+                totalLum += newLum;
             }
+
+            int meanNewLuminosity = Math.round(totalLum / Bulb.getCount());
+
+            for (LuminositySensor ls : lumSensors) {
+                /* for coherency */
+                // Sensor set bulb luminosity as the mean af all new luminosities to be more
+                // robust
+                ls.setBulbLuminosity(meanNewLuminosity);
+            }
+
+            for (Bulb bulb : bulbs) {
+                // Set bulb luminosity as the mean af all new luminosities to be more robust
+                bulb.getLuminosityResource().set(meanNewLuminosity);
+            }
+
+            OutputWindow.getLog()
+                    .println("[INFO: ALL BULBS] Actual luminosity is " + actualLum + " and estimated external is "
+                            + Math.round(externalMeanLum / Bulb.getCount())
+                            + " thus new bulb luminosity value will be set to " + meanNewLuminosity);
         }
 
-        for (SmartDevice device : register) {
-            /* for coherency */
-            if (device.getClass() == LuminositySensor.class) {
-                LuminositySensor ls = (LuminositySensor) device;
-                ls.setBulbLuminosity(newLum);
-            }
-        }
-
-	}
+    }
 
     public BulbSwitch getSwitchResource() {
         return bswitch;
@@ -114,11 +139,11 @@ public class Bulb extends SmartDevice {
 
                 public void onLoad(CoapResponse response) {
                     String content = response.getResponseText();
-                    System.out.println("[INFO: BULB " + ip + "] Switch toggle response: " + content);
+                    OutputWindow.getLog().println("[INFO: BULB " + ip + "] Switch toggle response: " + content);
                 }
 
                 public void onError() {
-                    System.err.println("[ERROR: BULB " + ip + "] Possible timeout");
+                    OutputWindow.getLog().println("[ERROR: BULB " + ip + "] Possible timeout");
                 }
 
             }, "", MediaTypeRegistry.TEXT_PLAIN);
@@ -130,11 +155,11 @@ public class Bulb extends SmartDevice {
 
                 public void onLoad(CoapResponse response) {
                     String content = response.getResponseText();
-                    System.out.println("[INFO: BULB " + ip + "] Switch get response: " + content);
+                    OutputWindow.getLog().println("[INFO: BULB " + ip + "] Switch get response: " + content);
                 }
 
                 public void onError() {
-                    System.err.println("[ERROR: BULB " + ip + "] Possible timeout");
+                    OutputWindow.getLog().println("[ERROR: BULB " + ip + "] Possible timeout");
                 }
 
             });
@@ -146,11 +171,11 @@ public class Bulb extends SmartDevice {
 
                 public void onLoad(CoapResponse response) {
                     String content = response.getResponseText();
-                    System.out.println("[INFO: BULB " + ip + "] Switch set response: " + content);
+                    OutputWindow.getLog().println("[INFO: BULB " + ip + "] Switch set response: " + content);
                 }
 
                 public void onError() {
-                    System.err.println("[ERROR: BULB " + ip + "] Possible timeout");
+                    OutputWindow.getLog().println("[ERROR: BULB " + ip + "] Possible timeout");
                 }
 
             }, "status=" + status, MediaTypeRegistry.TEXT_PLAIN);
@@ -162,7 +187,7 @@ public class Bulb extends SmartDevice {
         // Represent luminosity resource
 
         private CoapClient client;
-        private int value;
+        private int value = 0;
 
         protected BulbLuminosity(String ip) {
             client = new CoapClient("coap://[" + ip + "]/luminosity");
@@ -179,14 +204,14 @@ public class Bulb extends SmartDevice {
 
                 public void onLoad(CoapResponse response) {
                     String content = response.getResponseText();
-                    System.out.println("[INFO: BULB " + ip + "] Luminosity increase response: " + content);
+                    OutputWindow.getLog().println("[INFO: BULB " + ip + "] Luminosity increase response: " + content);
                 }
 
                 public void onError() {
-                    System.err.println("[ERROR: BULB " + ip + "] Possible timeout");
+                    OutputWindow.getLog().println("[ERROR: BULB " + ip + "] Possible timeout");
                 }
 
-            },"+=" + amount, MediaTypeRegistry.TEXT_PLAIN);
+            }, "+=" + amount, MediaTypeRegistry.TEXT_PLAIN);
         }
 
         public void decrease(int amount) {
@@ -195,14 +220,14 @@ public class Bulb extends SmartDevice {
 
                 public void onLoad(CoapResponse response) {
                     String content = response.getResponseText();
-                    System.out.println("[INFO: BULB " + ip + "] Luminosity decrease response: " + content);
+                    OutputWindow.getLog().println("[INFO: BULB " + ip + "] Luminosity decrease response: " + content);
                 }
 
                 public void onError() {
-                    System.err.println("[ERROR: BULB " + ip + "] Possible timeout");
+                    OutputWindow.getLog().println("[ERROR: BULB " + ip + "] Possible timeout");
                 }
 
-            },"-=" + amount, MediaTypeRegistry.TEXT_PLAIN);
+            }, "-=" + amount, MediaTypeRegistry.TEXT_PLAIN);
         }
 
         public void get() {
@@ -211,15 +236,17 @@ public class Bulb extends SmartDevice {
 
                 public void onLoad(CoapResponse response) {
                     String content = response.getResponseText();
-                    System.out.println("[INFO: BULB " + ip + "] Luminosity value is: " + content);
-                    value = Integer.parseInt(content);
+                    OutputWindow.getLog().println("[INFO: BULB " + ip + "] Luminosity value is: " + content);
+                    if (!content.trim().equals("")) {
+                        value = Integer.parseInt(content);
+                    }
                 }
 
                 public void onError() {
-                    System.err.println("[ERROR: BULB " + ip + "] Possible timeout");
+                    OutputWindow.getLog().println("[ERROR: BULB " + ip + "] Possible timeout");
                 }
 
-            });            
+            });
         }
 
         public void set(int amount) {
@@ -228,15 +255,17 @@ public class Bulb extends SmartDevice {
 
                 public void onLoad(CoapResponse response) {
                     String content = response.getResponseText();
-                    System.out.println("[INFO: BULB " + ip + "] New luminosity value: " + content);
-                    value = Integer.parseInt(content);
+                    OutputWindow.getLog().println("[INFO: BULB " + ip + "] New luminosity value: " + content);
+                    if (!content.trim().equals("")) {
+                        value = Integer.parseInt(content);
+                    }
                 }
 
                 public void onError() {
-                    System.err.println("[ERROR: BULB " + ip + "] Possible timeout");
+                    OutputWindow.getLog().println("[ERROR: BULB " + ip + "] Possible timeout");
                 }
 
-            },"lum=" + amount, MediaTypeRegistry.TEXT_PLAIN);
+            }, "lum=" + amount, MediaTypeRegistry.TEXT_PLAIN);
         }
 
     }

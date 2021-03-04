@@ -1,12 +1,19 @@
 package smartDevices;
 
+import java.util.ArrayList;
+
 import org.eclipse.californium.core.CoapClient;
 import org.eclipse.californium.core.CoapHandler;
 import org.eclipse.californium.core.CoapObserveRelation;
 import org.eclipse.californium.core.CoapResponse;
 
+import uilities.AppOptions;
+import uilities.OutputWindow;
+
 public class PresenceSensor extends SmartDevice {
     // To interact with presence sensors using coap
+
+    private static ArrayList<String> IPs = new ArrayList<String>();
 
     private static int sensorsCount = 0;
     private CoapClient client;
@@ -14,31 +21,37 @@ public class PresenceSensor extends SmartDevice {
 
     public PresenceSensor(String ip) {
 
+        IPs.add(ip);
+
         sensorsCount++;
         SmartDevice.increaseCount();
         client = new CoapClient("coap://[" + ip + "]/presence");
 
         observeRelation = client.observe(new CoapHandler() {
             public void onLoad(CoapResponse response) {
-                String content = response.getResponseText();
-                if(content.equals("T")){
-                    System.out.println("[INFO: PRESENCE SENSOR] Someone here, switching ON all lights...");
-                    Bulb.setAllSwitches("ON");
-                }
-                if(content.equals("F")){
-                    System.out.println("[INFO: PRESENCE SENSOR] No one here, switching OFF all lights...");
-                    Bulb.setAllSwitches("OFF");                    
+                if (!AppOptions.manualMode) {
+                    String content = response.getResponseText();
+                    if (content.equals("T")) {
+                        OutputWindow.getLog()
+                                .println("[INFO: PRESENCE SENSOR] Someone here, switching ON all lights...");
+                        Bulb.setAllSwitches("ON");
+                    }
+                    if (content.equals("F")) {
+                        OutputWindow.getLog()
+                                .println("[INFO: PRESENCE SENSOR] No one here, switching OFF all lights...");
+                        Bulb.setAllSwitches("OFF");
+                    }
                 }
             }
 
             public void onError() {
-                System.err.println("[ERROR: PRESENCE SENSOR] Error in observing presence sensor");
+                OutputWindow.getLog().println("[ERROR: PRESENCE SENSOR] Error in observing presence sensor");
             }
         });
 
     }
 
-    public static void refreshCount(){
+    public static void refreshCount() {
         sensorsCount = 0;
     }
 
@@ -56,14 +69,18 @@ public class PresenceSensor extends SmartDevice {
 
             public void onLoad(CoapResponse response) {
                 String content = response.getResponseText();
-                System.out.println("[INFO: PRESENCE SENSOR] Get response: " + content);
+                OutputWindow.getLog().println("[INFO: PRESENCE SENSOR] Get response: " + content);
             }
 
             public void onError() {
-                System.err.println("[ERROR: PRESENCE SENSOR] Possible timeout");
+                OutputWindow.getLog().println("[ERROR: PRESENCE SENSOR] Possible timeout");
             }
 
         });
+    }
+
+    public static ArrayList<String> getIPs() {
+        return IPs;
     }
 
 }

@@ -1,34 +1,47 @@
 package smartDevices;
 
+import java.util.ArrayList;
+
 import org.eclipse.californium.core.CoapClient;
 import org.eclipse.californium.core.CoapHandler;
 import org.eclipse.californium.core.CoapObserveRelation;
 import org.eclipse.californium.core.CoapResponse;
 import org.eclipse.californium.core.coap.MediaTypeRegistry;
 
+import uilities.AppOptions;
+import uilities.OutputWindow;
+
 public class LuminositySensor extends SmartDevice {
     // To interact with presence sensors using coap
+
+    private static ArrayList<String> IPs = new ArrayList<String>();
 
     private static int sensorsCount = 0;
     private CoapClient client;
     private CoapObserveRelation observeRelation;
-    private int desiredLuminosity = 100;
 
     public LuminositySensor(String ip) {
 
+        IPs.add(ip);
         sensorsCount++;
         SmartDevice.increaseCount();
         client = new CoapClient("coap://[" + ip + "]/luminosity");
 
         observeRelation = client.observe(new CoapHandler() {
             public void onLoad(CoapResponse response) {
-                int actualLuminosity = Integer.parseInt(response.getResponseText());
-                System.out.println("[INFO: LUMINOSITY SENSOR] Actual luminosity is "+actualLuminosity+" instead desired is "+desiredLuminosity);
-                Bulb.setAllToDesiredLuminosity(actualLuminosity, desiredLuminosity);
+                String content = response.getResponseText();
+                int actualLuminosity = -1;
+                if(!content.trim().equals("")){
+                    actualLuminosity = Integer.parseInt(content);
+                }
+                OutputWindow.getLog().println("[INFO: LUMINOSITY SENSOR] Actual luminosity is "+actualLuminosity+" instead desired is "+ AppOptions.desiredLum);
+                if(!AppOptions.manualMode){
+                    Bulb.setAllToDesiredLuminosity(actualLuminosity, AppOptions.desiredLum);
+                }
             }
 
             public void onError() {
-                System.err.println("[ERROR: LUMINOSITY SENSOR] Error in observing luminosity sensor");
+                OutputWindow.getLog().println("[ERROR: LUMINOSITY SENSOR] Error in observing luminosity sensor");
             }
         });
 
@@ -43,11 +56,11 @@ public class LuminositySensor extends SmartDevice {
     }
 
     public int getDesiredLuminosity() {
-        return desiredLuminosity;
+        return AppOptions.desiredLum;
     }
 
     public void setDesiredLuminosity(int dl) {
-        desiredLuminosity = dl;
+        AppOptions.desiredLum = dl;
     }
 
     public CoapObserveRelation getObserveRelation() {
@@ -60,11 +73,11 @@ public class LuminositySensor extends SmartDevice {
 
             public void onLoad(CoapResponse response) {
                 String content = response.getResponseText();
-                System.out.println("[INFO: LUMINOSITY SENSOR] Get response: " + content);
+                OutputWindow.getLog().println("[INFO: LUMINOSITY SENSOR] Get response: " + content);
             }
 
             public void onError() {
-                System.err.println("[ERROR: LUMINOSITY SENSOR] Possible timeout");
+                OutputWindow.getLog().println("[ERROR: LUMINOSITY SENSOR] Possible timeout");
             }
 
         });
@@ -76,15 +89,19 @@ public class LuminositySensor extends SmartDevice {
 
                 public void onLoad(CoapResponse response) {
                     String content = response.getResponseText();
-                    System.out.println("[INFO: LUMINOSITY SENSOR] Bulb luminosity set response: " + content);
+                    OutputWindow.getLog().println("[INFO: LUMINOSITY SENSOR] Bulb luminosity set response: " + content);
                 }
 
                 public void onError() {
-                    System.err.println("[ERROR: LUMINOSITY SENSOR] Possible timeout");
+                    OutputWindow.getLog().println("[ERROR: LUMINOSITY SENSOR] Possible timeout");
                 }
 
             }, "bulb=" + lum, MediaTypeRegistry.TEXT_PLAIN);
         
+	}
+
+	public static ArrayList<String> getIPs() {
+		return IPs;
 	}
 
 }

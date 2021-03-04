@@ -85,7 +85,8 @@ static void res_put_handler(coap_message_t *request, coap_message_t *response,
     } else {
 
       bulbs_luminosity = tmp_lum;
-      LOG_INFO("Bulb luminosity is %u\n", bulbs_luminosity);
+      actual_luminosity = bulbs_luminosity + external_luminosity;
+      LOG_INFO("Estimated bulb luminosity is %u, thus new actual luminosity is: %u\n", bulbs_luminosity, actual_luminosity);
       coap_set_status_code(response, CHANGED_2_04);
 
       char msg[max_char_len];

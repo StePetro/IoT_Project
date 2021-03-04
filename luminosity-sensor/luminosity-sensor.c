@@ -163,7 +163,9 @@ PROCESS_THREAD(luminosity_sensor, ev, data) {
 
     actual_luminosity = external_luminosity + bulbs_luminosity;
 
-    LOG_INFO("Luminosity value changed at %u\n", actual_luminosity);
+    LOG_INFO("Luminosity value changed at: %d\n", actual_luminosity);
+    LOG_INFO("Estimated external luminosity is: %d\n", external_luminosity);
+    LOG_INFO("Estimated bulbs luminosity is: %d\n", bulbs_luminosity);
 
     res_luminosity.trigger();
 

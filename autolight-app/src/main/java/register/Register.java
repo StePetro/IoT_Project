@@ -11,10 +11,13 @@ import smartDevices.Bulb;
 import smartDevices.LuminositySensor;
 import smartDevices.PresenceSensor;
 import smartDevices.SmartDevice;
+import uilities.OutputWindow;
 
 public abstract class Register {
 
-    static private ArrayList<SmartDevice> devices = new ArrayList<SmartDevice>();
+    static private ArrayList<Bulb> bulbs = new ArrayList<Bulb>();
+    static private ArrayList<PresenceSensor> presenceSensors = new ArrayList<PresenceSensor>();
+    static private ArrayList<LuminositySensor> luminositySensors = new ArrayList<LuminositySensor>();
     static private CoapClient client;
     static private CoapObserveRelation observeRelation;
 
@@ -30,7 +33,7 @@ public abstract class Register {
             }
 
             public void onError() {
-                System.err.println("[ERROR: Register] Error in observing register");
+               OutputWindow.getLog().println("[ERROR: Register] Error in observing register");
             }
 
         });
@@ -46,7 +49,7 @@ public abstract class Register {
             }
 
             public void onError() {
-                System.err.println("[ERROR: PRESENCE SENSOR] Possible timeout");
+                OutputWindow.getLog().println("[ERROR: PRESENCE SENSOR] Possible timeout");
             }
 
         });
@@ -54,12 +57,7 @@ public abstract class Register {
 
     static public void refreshRegister(String content){
 
-        System.out.println("[INFO: Register] Refreshing register...");
-
-        devices.clear();
-        SmartDevice.refreshCount();
-        Bulb.refreshCount();
-        PresenceSensor.refreshCount();
+        OutputWindow.getLog().println("[INFO: Register] Refreshing register...");
     
         String[] descriptors = content.split(" ");
 
@@ -67,29 +65,37 @@ public abstract class Register {
 
             String[] type_ip = descriptor.split("@");
 
-            if(type_ip[0].equals("BULB")){
-                devices.add(new Bulb(type_ip[1]));
-                System.out.println("[INFO: Register] Bulb with ip: " + type_ip[1] + " added to register, total bulbs registred: " + Bulb.getCount() );
+            if(type_ip[0].equals("BULB") && !Bulb.getIPs().contains(type_ip[1])){
+                bulbs.add(new Bulb(type_ip[1]));
+                OutputWindow.getLog().println("[INFO: Register] Bulb with ip: " + type_ip[1] + " added to register, total bulbs registred: " + Bulb.getCount() );
             }
 
-            if(type_ip[0].equals("PR_SENS")){
-                devices.add(new PresenceSensor(type_ip[1]));
-                System.out.println("[INFO: Register] Presence sensor with ip: " + type_ip[1] + " added to register, total presence sensors registred: " + PresenceSensor.getCount() );
+            if(type_ip[0].equals("PR_SENS") && !PresenceSensor.getIPs().contains(type_ip[1])){
+                presenceSensors.add(new PresenceSensor(type_ip[1]));
+                OutputWindow.getLog().println("[INFO: Register] Presence sensor with ip: " + type_ip[1] + " added to register, total presence sensors registred: " + PresenceSensor.getCount() );
             }
 
-            if(type_ip[0].equals("LUM_SENS")){
-                devices.add(new LuminositySensor(type_ip[1]));
-                System.out.println("[INFO: Register] Luminosity sensor with ip: " + type_ip[1] + " added to register, total luminosity sensors registred: " + LuminositySensor.getCount() );
+            if(type_ip[0].equals("LUM_SENS") && !LuminositySensor.getIPs().contains(type_ip[1]) ){
+                luminositySensors.add(new LuminositySensor(type_ip[1]));
+                OutputWindow.getLog().println("[INFO: Register] Luminosity sensor with ip: " + type_ip[1] + " added to register, total luminosity sensors registred: " + LuminositySensor.getCount() );
             }
 
         }
 
-        System.out.println("[INFO: Register] Total devices registred: " + devices.size());
+        OutputWindow.getLog().println("[INFO: Register] Total devices registred: " + SmartDevice.getCount());
 
     }
 
-    static public ArrayList<SmartDevice> getRegistredDevices(){
-        return devices;
+    static public ArrayList<Bulb> getRegistredBulbs(){
+        return bulbs;
+    }
+
+    static public ArrayList<LuminositySensor> getRegistredLuminositySensors(){
+        return luminositySensors;
+    }
+
+    static public ArrayList<PresenceSensor> getRegistredPresenceSensors(){
+        return presenceSensors;
     }
 
     public CoapObserveRelation getObserveRelation() {

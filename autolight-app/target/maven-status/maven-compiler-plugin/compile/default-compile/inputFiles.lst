@@ -1,7 +1,8 @@
-/home/osboxes/contiki-ng/IoT_Project/autolight-app/src/main/java/server/resources/RegisterResource.java
-/home/osboxes/contiki-ng/IoT_Project/autolight-app/src/main/java/server/Server.java
+/home/osboxes/contiki-ng/IoT_Project/autolight-app/src/main/java/uilities/AppOptions.java
 /home/osboxes/contiki-ng/IoT_Project/autolight-app/src/main/java/AutoLightApp.java
 /home/osboxes/contiki-ng/IoT_Project/autolight-app/src/main/java/smartDevices/SmartDevice.java
 /home/osboxes/contiki-ng/IoT_Project/autolight-app/src/main/java/register/Register.java
+/home/osboxes/contiki-ng/IoT_Project/autolight-app/src/main/java/uilities/OutputWindow.java
 /home/osboxes/contiki-ng/IoT_Project/autolight-app/src/main/java/smartDevices/Bulb.java
+/home/osboxes/contiki-ng/IoT_Project/autolight-app/src/main/java/smartDevices/LuminositySensor.java
 /home/osboxes/contiki-ng/IoT_Project/autolight-app/src/main/java/smartDevices/PresenceSensor.java
