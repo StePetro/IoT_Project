@@ -142,7 +142,7 @@ public class AutoLightApp {
 						for (Bulb b : Register.getRegistredBulbs()) {
 							if (b.getIP().equals(complexCommand[1])) {
 								if (complexCommand[2].equals("+")) {
-									if (!((b.getLuminosityResource().getValue() + lum) > 100)) {
+									if (!(b.getLuminosityResource().getValue() + lum > 100)) {
 										b.getLuminosityResource().increase(lum);
 									} else {
 										b.getLuminosityResource().set(100);

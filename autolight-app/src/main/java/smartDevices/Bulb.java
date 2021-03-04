@@ -205,6 +205,9 @@ public class Bulb extends SmartDevice {
                 public void onLoad(CoapResponse response) {
                     String content = response.getResponseText();
                     OutputWindow.getLog().println("[INFO: BULB " + ip + "] Luminosity increase response: " + content);
+                    if (!content.trim().equals("")) {
+                        value = Integer.parseInt(content);
+                    }
                 }
 
                 public void onError() {
@@ -221,6 +224,9 @@ public class Bulb extends SmartDevice {
                 public void onLoad(CoapResponse response) {
                     String content = response.getResponseText();
                     OutputWindow.getLog().println("[INFO: BULB " + ip + "] Luminosity decrease response: " + content);
+                    if (!content.trim().equals("")) {
+                        value = Integer.parseInt(content);
+                    }
                 }
 
                 public void onError() {

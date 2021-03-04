@@ -29,13 +29,14 @@ public class LuminositySensor extends SmartDevice {
 
         observeRelation = client.observe(new CoapHandler() {
             public void onLoad(CoapResponse response) {
-                String content = response.getResponseText();
-                int actualLuminosity = -1;
-                if(!content.trim().equals("")){
-                    actualLuminosity = Integer.parseInt(content);
-                }
-                OutputWindow.getLog().println("[INFO: LUMINOSITY SENSOR] Actual luminosity is "+actualLuminosity+" instead desired is "+ AppOptions.desiredLum);
-                if(!AppOptions.manualMode){
+                if (!AppOptions.manualMode) {
+                    String content = response.getResponseText();
+                    int actualLuminosity = -1;
+                    if (!content.trim().equals("")) {
+                        actualLuminosity = Integer.parseInt(content);
+                    }
+                    OutputWindow.getLog().println("[INFO: LUMINOSITY SENSOR] Actual luminosity is " + actualLuminosity
+                            + " instead desired is " + AppOptions.desiredLum);
                     Bulb.setAllToDesiredLuminosity(actualLuminosity, AppOptions.desiredLum);
                 }
             }
@@ -47,7 +48,7 @@ public class LuminositySensor extends SmartDevice {
 
     }
 
-    public static void refreshCount(){
+    public static void refreshCount() {
         sensorsCount = 0;
     }
 
@@ -83,25 +84,25 @@ public class LuminositySensor extends SmartDevice {
         });
     }
 
-	public void setBulbLuminosity(int lum) {
-            // ASYNC Set luminosity sensor bulb luminosity for coherency
-            client.put(new CoapHandler() {
+    public void setBulbLuminosity(int lum) {
+        // ASYNC Set luminosity sensor bulb luminosity for coherency
+        client.put(new CoapHandler() {
 
-                public void onLoad(CoapResponse response) {
-                    String content = response.getResponseText();
-                    OutputWindow.getLog().println("[INFO: LUMINOSITY SENSOR] Bulb luminosity set response: " + content);
-                }
+            public void onLoad(CoapResponse response) {
+                String content = response.getResponseText();
+                OutputWindow.getLog().println("[INFO: LUMINOSITY SENSOR] Bulb luminosity set response: " + content);
+            }
 
-                public void onError() {
-                    OutputWindow.getLog().println("[ERROR: LUMINOSITY SENSOR] Possible timeout");
-                }
+            public void onError() {
+                OutputWindow.getLog().println("[ERROR: LUMINOSITY SENSOR] Possible timeout");
+            }
 
-            }, "bulb=" + lum, MediaTypeRegistry.TEXT_PLAIN);
-        
-	}
+        }, "bulb=" + lum, MediaTypeRegistry.TEXT_PLAIN);
 
-	public static ArrayList<String> getIPs() {
-		return IPs;
-	}
+    }
+
+    public static ArrayList<String> getIPs() {
+        return IPs;
+    }
 
 }
