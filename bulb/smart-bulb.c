@@ -24,7 +24,7 @@
 
 #include "coap-blocking-api.h"
 #include "coap-engine.h"
-#define SERVER_EP "coap://[fd00::202:2:2:2]:5683"
+#define SERVER_EP "coap://[fd00::1]:5683"
 
 /* Log configuration */
 #include "sys/log.h"
@@ -118,7 +118,7 @@ PROCESS_THREAD(smart_bulb, ev, data) {
   char ip[MAX_IP_LEN];
   char payload[MAX_PAYLOAD_LEN];
   uiplib_ipaddr_snprint(ip,MAX_IP_LEN, &uip_ds6_if.addr_list[1].ipaddr);
-  snprintf(payload,MAX_PAYLOAD_LEN,"type=%s&ip=%s",type,ip);
+  snprintf(payload,MAX_PAYLOAD_LEN,"%s@%s",type,ip);
 
   while(!registred){
 

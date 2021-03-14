@@ -17,7 +17,7 @@ public class AutoLightApp {
 		OutputWindow log = new OutputWindow("AutoLight App LOG");
 		SwingUtilities.invokeLater(log);
 
-		Register.start(AppOptions.registerIP);
+		Register.start();
 
 		BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
 
@@ -41,30 +41,29 @@ public class AutoLightApp {
 			if (command.equals("!ls")) {
 				System.out.println("Command list:");
 				System.out.println("- !exit|!quit: to exit");
-				System.out.println("- !reg: lists the registered devices and their IPs");
+				System.out.println("- !reg: lists all registered devices");
 				System.out.println("- !mode [manual|auto]: to pass to manual/automatic mode");
 				System.out.println("- !des_lum [value]: to set desired luminosity value");
-				System.out.println("- !sw [Bulb IP] [ON|OFF]: to switch bulb on or off");
+				System.out.println("- !sw [Bulb ID] [ON|OFF]: to switch bulb on or off");
 				System.out.println("- !sw ALL [ON|OFF]: to switch all bulbs on or off");
-				System.out.println("- !lum [Bulb IP] [+|-] [value]: increase/decrease bulb luminosity value");
-				System.out.println("- !lum [Bulb IP] [value]: set bulb luminosity value");
+				System.out.println("- !lum [Bulb ID] [+|-] [value]: increase/decrease bulb luminosity value");
+				System.out.println("- !lum [Bulb ID] [value]: set bulb luminosity value");
 				System.out.println("- !lum [ALL] [value]: set all bulbs luminosity value");
 				continue;
 			}
 
 			if (command.equals("!reg")) {
-				Register.refreshRegister();
 				System.out.println("Registred BULBS:");
-				for (String ip : Bulb.getIPs()) {
-					System.out.println("- " + ip);
+				for (Bulb b : Register.getRegistredBulbs()) {
+					System.out.println("- ID: " + b.getID() + " , IP: " + b.getIP());
 				}
 				System.out.println("Registred PRESENCE SENSORS:");
-				for (String ip : PresenceSensor.getIPs()) {
-					System.out.println("- " + ip);
+				for (PresenceSensor ps : Register.getRegistredPresenceSensors()) {
+					System.out.println("- ID: " + ps.getID() + " , IP: " + ps.getIP());
 				}
 				System.out.println("Registred LUMINOSITY SENSORS:");
-				for (String ip : LuminositySensor.getIPs()) {
-					System.out.println("- " + ip);
+				for (LuminositySensor ls : Register.getRegistredLuminositySensors()) {
+					System.out.println("- ID: " + ls.getID() + " , IP: " + ls.getIP());
 				}
 				continue;
 			}
@@ -107,15 +106,18 @@ public class AutoLightApp {
 			}
 
 			if (complexCommand[0].equals("!sw")) {
-				if ((complexCommand[2].equals("ON") || complexCommand[2].equals("OFF"))
-						&& Bulb.getIPs().contains(complexCommand[1])) {
-					for (Bulb b : Register.getRegistredBulbs()) {
-						if (b.getIP().equals(complexCommand[1])) {
-							b.getSwitchResource().set(complexCommand[2]);
-							break;
+				try {
+					int id = Integer.parseInt(complexCommand[1]);
+					if ((complexCommand[2].equals("ON") || complexCommand[2].equals("OFF")) && Bulb.getCount() > id) {
+						for (Bulb b : Register.getRegistredBulbs()) {
+							if (b.getID() == id) {
+								b.getSwitchResource().set(complexCommand[2]);
+								break;
+							}
 						}
+						continue;
 					}
-					continue;
+				} catch (Exception ex) {
 				}
 				System.out.println("Bulb not found or command not valid...");
 				continue;
@@ -124,7 +126,7 @@ public class AutoLightApp {
 			if (complexCommand[0].equals("!lum") && complexCommand[1].equals("ALL")) {
 				try {
 					int lum = Integer.parseInt(complexCommand[2]);
-					if (lum > 0 && lum <= 100) {
+					if (lum >= 0 && lum <= 100) {
 						Bulb.SetAllLuminosities(lum);
 						continue;
 					}
@@ -138,9 +140,10 @@ public class AutoLightApp {
 			if (complexCommand[0].equals("!lum") && (complexCommand[2].equals("+") || complexCommand[2].equals("-"))) {
 				try {
 					int lum = Integer.parseInt(complexCommand[3]);
-					if (Bulb.getIPs().contains(complexCommand[1])) {
+					int id = Integer.parseInt(complexCommand[1]);
+					if (Bulb.getCount() > id) {
 						for (Bulb b : Register.getRegistredBulbs()) {
-							if (b.getIP().equals(complexCommand[1])) {
+							if (b.getID() == id) {
 								if (complexCommand[2].equals("+")) {
 									if (!(b.getLuminosityResource().getValue() + lum > 100)) {
 										b.getLuminosityResource().increase(lum);
@@ -173,9 +176,10 @@ public class AutoLightApp {
 			if (complexCommand[0].equals("!lum")) {
 				try {
 					int lum = Integer.parseInt(complexCommand[2]);
-					if (Bulb.getIPs().contains(complexCommand[1]) && lum >= 0 && lum <= 100) {
+					int id = Integer.parseInt(complexCommand[1]);
+					if (Bulb.getCount() > id && lum >= 0 && lum <= 100) {
 						for (Bulb b : Register.getRegistredBulbs()) {
-							if (b.getIP().equals(complexCommand[1])) {
+							if (b.getID() == id) {
 								b.getLuminosityResource().set(lum);
 								break;
 							}

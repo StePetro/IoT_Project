@@ -19,10 +19,14 @@ public class LuminositySensor extends SmartDevice {
     private static int sensorsCount = 0;
     private CoapClient client;
     private CoapObserveRelation observeRelation;
+    private int id;
+    private String ip;
 
     public LuminositySensor(String ip) {
 
         IPs.add(ip);
+        this.ip = ip;
+        id = sensorsCount;
         sensorsCount++;
         SmartDevice.increaseCount();
         client = new CoapClient("coap://[" + ip + "]/luminosity");
@@ -54,6 +58,14 @@ public class LuminositySensor extends SmartDevice {
 
     public static int getCount() {
         return sensorsCount;
+    }
+
+    public int getID() {
+        return id;
+    }
+
+    public String getIP() {
+        return ip;
     }
 
     public int getDesiredLuminosity() {

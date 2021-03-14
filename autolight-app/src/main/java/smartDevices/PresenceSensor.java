@@ -18,10 +18,14 @@ public class PresenceSensor extends SmartDevice {
     private static int sensorsCount = 0;
     private CoapClient client;
     private CoapObserveRelation observeRelation;
+    private int id;
+    private String ip;
 
     public PresenceSensor(String ip) {
 
         IPs.add(ip);
+        this.ip = ip;
+        id = sensorsCount;
 
         sensorsCount++;
         SmartDevice.increaseCount();
@@ -81,6 +85,14 @@ public class PresenceSensor extends SmartDevice {
 
     public static ArrayList<String> getIPs() {
         return IPs;
+    }
+
+    public int getID() {
+        return id;
+    }
+
+    public String getIP() {
+        return ip;
     }
 
 }

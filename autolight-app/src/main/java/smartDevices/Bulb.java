@@ -19,10 +19,12 @@ public class Bulb extends SmartDevice {
     private BulbSwitch bswitch;
     private BulbLuminosity luminosity;
     private String ip;
+    private int id;
 
     public Bulb(String ip) {
 
         this.ip = ip;
+        id = bulbCount;
         bulbCount++;
         SmartDevice.increaseCount();
         bswitch = new BulbSwitch(ip);
@@ -106,6 +108,10 @@ public class Bulb extends SmartDevice {
                             + " thus new bulb luminosity value will be set to " + meanNewLuminosity);
         }
 
+    }
+
+    public int getID() {
+        return id;
     }
 
     public BulbSwitch getSwitchResource() {
