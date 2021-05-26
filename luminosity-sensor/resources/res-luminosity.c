@@ -25,7 +25,13 @@ static void res_put_handler(coap_message_t *request, coap_message_t *response,
 
 static void res_event_handler(void);
 
-EVENT_RESOURCE(res_luminosity, "", res_get_handler, NULL, res_put_handler, NULL,
+EVENT_RESOURCE(res_luminosity, 
+               '</lum-sensor/luminosity>;title="Luminosity Sensor Value";
+               rt="luminosity";if="lum-sensor"',
+               res_get_handler, 
+               NULL, 
+               res_put_handler, 
+               NULL,
                res_event_handler);
 
 /*---------------------------------------------------------------------------*/

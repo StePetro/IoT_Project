@@ -27,7 +27,11 @@ static void res_put_handler(coap_message_t *request, coap_message_t *response,
                             uint8_t *buffer, uint16_t preferred_size,
                             int32_t *offset);
 
-RESOURCE(res_switch, "", res_get_handler, res_post_handler, res_put_handler,
+RESOURCE(res_switch, 
+         '</bulb/switch>;title="Bulb Switch";rt="switch";if="bulb"', 
+         res_get_handler, 
+         res_post_handler, 
+         res_put_handler,
          NULL);
 
 /*---------------------------------------------------------------------------*/
@@ -38,7 +42,7 @@ static const size_t max_char_len = 3;  // Three digits maximum
 
 /*---------------------------------------------------------------------------*/
 
-/* To get the current luminosity value */
+/* To get the current switch value */
 static void res_get_handler(coap_message_t *request, coap_message_t *response,
                             uint8_t *buffer, uint16_t preferred_size,
                             int32_t *offset) {

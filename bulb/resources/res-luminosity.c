@@ -23,7 +23,11 @@ static void res_put_handler(coap_message_t *request, coap_message_t *response,
                             uint8_t *buffer, uint16_t preferred_size,
                             int32_t *offset);
 
-RESOURCE(res_presence, "", res_get_handler, res_post_handler, res_put_handler,
+RESOURCE(res_presence, 
+         '</bulb/luminosity>;title="Bulb Luminosity";rt="luminosity";if="bulb"', 
+         res_get_handler, 
+         res_post_handler, 
+         res_put_handler,
          NULL);
 
 /*---------------------------------------------------------------------------*/
