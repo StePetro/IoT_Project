@@ -27,7 +27,7 @@ static void res_event_handler(void);
 
 EVENT_RESOURCE(res_luminosity, 
                '</lum-sensor/luminosity>;title="Luminosity Sensor Value";
-               rt="luminosity";if="lum-sensor"',
+               rt="luminosity";if="lum-sensor";obs',
                res_get_handler, 
                NULL, 
                res_put_handler, 
