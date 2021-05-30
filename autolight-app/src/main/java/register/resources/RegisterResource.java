@@ -9,12 +9,17 @@ import register.Register;
 import smartDevices.SmartDevice;
 import uilities.OutputWindow;
 
+/* CoAP resource for registration service */ 
 public class RegisterResource extends CoapResource {
 
+    /* Constructor */
     public RegisterResource(String name) {
         super(name);
     }
 
+    /* ------------------------------------------------------ */
+
+    /* Handles get request respondig with registred devices number */
     public void handleGET(CoapExchange exchange) {
 
         OutputWindow.getLog().println("[INFO: Register Resource] handling get request...");
@@ -26,7 +31,12 @@ public class RegisterResource extends CoapResource {
         exchange.respond(response);
     }
 
+    /* Handles put request executing device registration */
     public void handlePUT(CoapExchange exchange) {
+
+        /* INFO: in my implementation registration is IDEMPOTENT because 
+           a duplicate request for an already registred device do not 
+           produce changes, this is why is used a PUT insted of a POST */ 
 
         String[] payload = exchange.getRequestText().split("@");
 
@@ -43,6 +53,7 @@ public class RegisterResource extends CoapResource {
         } 
 
         if (success) {
+            /* ACKs with a CHANGED responce if registration is succesful */
             Response response = new Response(ResponseCode.CHANGED);
             exchange.respond(response);
         } else {

@@ -16,20 +16,31 @@
 #include "sys/etimer.h"
 #include "os/dev/leds.h"
 
-/* Luminosity variables */
-#include "global-variables.h"
-
-#define MAX_IP_LEN 39
-#define MAX_PAYLOAD_LEN 60
-
 #include "coap-blocking-api.h"
 #include "coap-engine.h"
-#define SERVER_EP "coap://[fd00::1]:5683"
 
 /* Log configuration */
 #include "sys/log.h"
 #define LOG_MODULE "Luminosity Sensor"
 #define LOG_LEVEL LOG_LEVEL_INFO
+
+/* Global Variables */
+
+// textual max ip len in bytes including ":"
+// xxxx:xxxx:xxxx:xxxx:xxxx:xxxx:xxxx:xxxx
+#define MAX_IP_LEN 39
+
+// to fit ip + device type
+#define MAX_PAYLOAD_LEN 60
+
+// retry to connect to BR every 5 sec
+#define CONN_TRY_INTERVAL 5
+
+// Luminosity variables
+#include "global-variables.h"
+
+// server ip hardcoded
+#define SERVER_EP "coap://[fd00::1]:5683"
 
 /*---------------------------------------------------------------------------*/
 
@@ -39,17 +50,21 @@ AUTOSTART_PROCESSES(&luminosity_sensor);
 
 /*---------------------------------------------------------------------------*/
 
+// not yet registred
 static bool registred = false;
 
+/* Handles registration response */
 void client_chunk_handler(coap_message_t *response) {
 
   const uint8_t *chunk;
 
+  // fail only if don't receive a response 
   if (response == NULL) {
     puts("Request timed out");
     return;
   }
 
+  // ack received 
   coap_get_payload(response, &chunk);
   registred = true;
 
@@ -106,7 +121,7 @@ PROCESS_THREAD(luminosity_sensor, ev, data) {
 
   /* Check connectivity every 5 second */
   leds_set(LEDS_NUM_TO_MASK(LEDS_YELLOW));
-  etimer_set(&connectivity_timer, CLOCK_SECOND*5);
+  etimer_set(&connectivity_timer, CLOCK_SECOND*CONN_TRY_INTERVAL);
 
   while(!connected){
     PROCESS_WAIT_UNTIL(etimer_expired(&connectivity_timer));
@@ -138,6 +153,7 @@ PROCESS_THREAD(luminosity_sensor, ev, data) {
   /* Manage random luminosity sensing */
   while (1) {
 
+    // simulate random sensing
     etimer_set(&random_timer, rand()%(CLOCK_SECOND*60) + 10*CLOCK_SECOND);
 
     PROCESS_WAIT_UNTIL(etimer_expired(&random_timer));
@@ -167,6 +183,7 @@ PROCESS_THREAD(luminosity_sensor, ev, data) {
     LOG_INFO("Estimated external luminosity is: %d\n", external_luminosity);
     LOG_INFO("Estimated bulbs luminosity is: %d\n", bulbs_luminosity);
 
+    // Trigger resource change notification
     res_luminosity.trigger();
 
   }

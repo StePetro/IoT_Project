@@ -16,20 +16,31 @@
 #include "os/dev/leds.h"
 #include "os/dev/button-hal.h"
 
-#define MAX_IP_LEN 39
-#define MAX_PAYLOAD_LEN 60
-
-// "status" variable
-#include "global-variables.h"
-
 #include "coap-blocking-api.h"
 #include "coap-engine.h"
-#define SERVER_EP "coap://[fd00::1]:5683"
 
 /* Log configuration */
 #include "sys/log.h"
 #define LOG_MODULE "Bulb"
 #define LOG_LEVEL LOG_LEVEL_INFO
+
+/* Global Variables */
+
+// textual max ip len in bytes including ":"
+// xxxx:xxxx:xxxx:xxxx:xxxx:xxxx:xxxx:xxxx
+#define MAX_IP_LEN 39
+
+// to fit ip + device type
+#define MAX_PAYLOAD_LEN 60
+
+// retry to connect to BR every 5 sec
+#define CONN_TRY_INTERVAL 5
+
+// server ip hardcoded
+#define SERVER_EP "coap://[fd00::1]:5683"
+
+// "status" variable
+#include "global-variables.h"
 
 /*---------------------------------------------------------------------------*/
 
@@ -39,17 +50,21 @@ AUTOSTART_PROCESSES(&smart_bulb);
 
 /*---------------------------------------------------------------------------*/
 
+// not yet registred
 static bool registred = false;
 
+/* Handles registration response */
 void client_chunk_handler(coap_message_t *response) {
 
   const uint8_t *chunk;
 
+  // fail only if don't receive a response 
   if (response == NULL) {
     puts("Request timed out");
     return;
   }
 
+  // ack received 
   coap_get_payload(response, &chunk);
   registred = true;
 
@@ -103,9 +118,9 @@ PROCESS_THREAD(smart_bulb, ev, data) {
 
   LOG_INFO("Smart bulb started...\n");
 
-  /* Check connectivity every 5 second */
+  /* Check connectivity every CONN_TRY_INTERVAL second */
   leds_set(LEDS_NUM_TO_MASK(LEDS_YELLOW));
-  etimer_set(&connectivity_timer, CLOCK_SECOND*5);
+  etimer_set(&connectivity_timer, CLOCK_SECOND*CONN_TRY_INTERVAL);
 
   while(!connected){
     PROCESS_WAIT_UNTIL(etimer_expired(&connectivity_timer));

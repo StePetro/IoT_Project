@@ -1,5 +1,6 @@
 package smartDevices;
 
+/* Common functions and variables to all devices */
 public abstract class SmartDevice {
 
     private static int count = 0;

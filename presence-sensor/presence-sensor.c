@@ -25,12 +25,17 @@
 #define LOG_LEVEL LOG_LEVEL_INFO
 
 /* Global Variables */
+
 // textual max ip len in bytes including ":"
 // xxxx:xxxx:xxxx:xxxx:xxxx:xxxx:xxxx:xxxx
 #define MAX_IP_LEN 39
+
 // to fit ip + device type
 #define MAX_PAYLOAD_LEN 60
+
+// retry to connect to BR every 5 sec
 #define CONN_TRY_INTERVAL 5
+
 // server ip hardcoded
 #define SERVER_EP "coap://[fd00::1]:5683"
 

@@ -14,17 +14,22 @@ public class AutoLightApp {
 
 	public static void main(String[] args) {
 
+		// log window for debug,
+		// avoid making terminal unusable
 		OutputWindow log = new OutputWindow("AutoLight App LOG");
 		SwingUtilities.invokeLater(log);
 
+		// starts register resource accessible via CoAP
 		Register.start();
 
+		// to read inputs from terminal
 		BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
 
 		String command = "";
 
 		System.out.println("Welcome to AutoLight App!\nDigit '!ls' for command list...");
 
+		/* APP commands handler */
 		while (true) {
 
 			try {

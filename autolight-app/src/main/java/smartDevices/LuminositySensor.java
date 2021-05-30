@@ -11,17 +11,25 @@ import org.eclipse.californium.core.coap.MediaTypeRegistry;
 import uilities.AppOptions;
 import uilities.OutputWindow;
 
+/* Every instance represent a real luminosity 
+   sensor accessible via CoAP */
 public class LuminositySensor extends SmartDevice {
-    // To interact with presence sensors using coap
 
+    /* Static variables */
+
+    // to have a quick access to all IPs
     private static ArrayList<String> IPs = new ArrayList<String>();
-
     private static int sensorsCount = 0;
+
+    /* Single sensor variables */
     private CoapClient client;
     private CoapObserveRelation observeRelation;
     private int id;
     private String ip;
 
+    /* ------------------------------------------------------ */
+
+    /* Constructor */ 
     public LuminositySensor(String ip) {
 
         IPs.add(ip);
@@ -29,8 +37,11 @@ public class LuminositySensor extends SmartDevice {
         id = sensorsCount;
         sensorsCount++;
         SmartDevice.increaseCount();
+
+        // CoAP client connection to sensor resource 
         client = new CoapClient("coap://[" + ip + "]/luminosity");
 
+        // creates and observe relation with device's resource 
         observeRelation = client.observe(new CoapHandler() {
             public void onLoad(CoapResponse response) {
                 if (!AppOptions.manualMode) {
@@ -41,7 +52,9 @@ public class LuminositySensor extends SmartDevice {
                     }
                     OutputWindow.getLog().println("[INFO: LUMINOSITY SENSOR] Actual luminosity is " + actualLuminosity
                             + " instead desired is " + AppOptions.desiredLum);
-                    Bulb.setAllToDesiredLuminosity(actualLuminosity, AppOptions.desiredLum);
+
+                    // a change in luminosity triggers the automatic luminosity adaptation
+                    Bulb.setAllToDesiredLuminosity(actualLuminosity, AppOptions.desiredLum); 
                 }
             }
 
@@ -52,6 +65,13 @@ public class LuminositySensor extends SmartDevice {
 
     }
 
+    /* ------------------------------------------------------ */
+    /* Static getters and utils functions */
+
+    public static ArrayList<String> getIPs() {
+        return IPs;
+    }
+
     public static void refreshCount() {
         sensorsCount = 0;
     }
@@ -60,28 +80,11 @@ public class LuminositySensor extends SmartDevice {
         return sensorsCount;
     }
 
-    public int getID() {
-        return id;
-    }
-
-    public String getIP() {
-        return ip;
-    }
-
-    public int getDesiredLuminosity() {
-        return AppOptions.desiredLum;
-    }
-
-    public void setDesiredLuminosity(int dl) {
-        AppOptions.desiredLum = dl;
-    }
-
-    public CoapObserveRelation getObserveRelation() {
-        return observeRelation;
-    }
+    /* ------------------------------------------------------ */
+    /* Coap requests */
 
     public void get() {
-        // Get current luminosity
+        // ASYNC Get current luminosity
         client.get(new CoapHandler() {
 
             public void onLoad(CoapResponse response) {
@@ -113,8 +116,27 @@ public class LuminositySensor extends SmartDevice {
 
     }
 
-    public static ArrayList<String> getIPs() {
-        return IPs;
+    /* ------------------------------------------------------ */
+    /* Setters and getters */
+
+    public int getID() {
+        return id;
+    }
+
+    public String getIP() {
+        return ip;
+    }
+
+    public int getDesiredLuminosity() {
+        return AppOptions.desiredLum;
+    }
+
+    public void setDesiredLuminosity(int dl) {
+        AppOptions.desiredLum = dl;
+    }
+
+    public CoapObserveRelation getObserveRelation() {
+        return observeRelation;
     }
 
 }

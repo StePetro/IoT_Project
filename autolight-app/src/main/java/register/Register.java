@@ -12,13 +12,18 @@ import smartDevices.PresenceSensor;
 import smartDevices.SmartDevice;
 import uilities.OutputWindow;
 
+/* Non istantiable class to avoid starting multiple register instances */
 public abstract class Register {
-
+    
+    /* Variables */ 
     static private ArrayList<Bulb> bulbs = new ArrayList<Bulb>();
     static private ArrayList<PresenceSensor> presenceSensors = new ArrayList<PresenceSensor>();
     static private ArrayList<LuminositySensor> luminositySensors = new ArrayList<LuminositySensor>();
     static private CoapObserveRelation observeRelation;
     static private CoapServer server;
+
+    /* ------------------------------------------------------ */
+    /* CoAP server that handles register resource */ 
 
     static public void start() {
 
@@ -32,6 +37,9 @@ public abstract class Register {
         return server;
     }
 
+    /* ------------------------------------------------------ */
+
+    /* Concludes registration with devices istantiation */ 
     static public boolean addToRegister(String type, String ip) {
 
         boolean success = false;
@@ -61,6 +69,9 @@ public abstract class Register {
         return success;
 
     }
+
+    /* ------------------------------------------------------ */
+    /* Getters */
 
     static public ArrayList<Bulb> getRegistredBulbs() {
         return bulbs;

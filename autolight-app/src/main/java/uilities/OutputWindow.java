@@ -5,6 +5,7 @@ import java.awt.*;
 import javax.swing.*;
 import javax.swing.text.DefaultCaret;
 
+/* Output windows used to show debug informations */
 public class OutputWindow implements Runnable {
 
     private static OutputWindow self;

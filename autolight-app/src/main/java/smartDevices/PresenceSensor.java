@@ -10,16 +10,23 @@ import org.eclipse.californium.core.CoapResponse;
 import uilities.AppOptions;
 import uilities.OutputWindow;
 
+/* Every instance represent a real presence 
+   sensor accessible via CoAP */
 public class PresenceSensor extends SmartDevice {
-    // To interact with presence sensors using coap
 
+    /* Static variables */
+
+    // to have a quick access to all IPs
     private static ArrayList<String> IPs = new ArrayList<String>();
-
     private static int sensorsCount = 0;
+
+    /* Single sensor variables */
     private CoapClient client;
     private CoapObserveRelation observeRelation;
     private int id;
     private String ip;
+
+    /* ------------------------------------------------------ */
 
     public PresenceSensor(String ip) {
 
@@ -29,10 +36,14 @@ public class PresenceSensor extends SmartDevice {
 
         sensorsCount++;
         SmartDevice.increaseCount();
+
+        // CoAP client connection to sensor resource
         client = new CoapClient("coap://[" + ip + "]/presence");
 
+        // creates and observe relation with device's resource 
         observeRelation = client.observe(new CoapHandler() {
             public void onLoad(CoapResponse response) {
+                // Handle resource notifications switching bulbs ON or OFF              
                 if (!AppOptions.manualMode) {
                     String content = response.getResponseText();
                     if (content.equals("T")) {
@@ -55,6 +66,9 @@ public class PresenceSensor extends SmartDevice {
 
     }
 
+    /* ------------------------------------------------------ */
+    /* Static getters and utils functions */
+
     public static void refreshCount() {
         sensorsCount = 0;
     }
@@ -63,9 +77,12 @@ public class PresenceSensor extends SmartDevice {
         return sensorsCount;
     }
 
-    public CoapObserveRelation getObserveRelation() {
-        return observeRelation;
+    public static ArrayList<String> getIPs() {
+        return IPs;
     }
+
+    /* ------------------------------------------------------ */
+    /* Coap request */
 
     public void get() {
         // Get current presence status [T/F]
@@ -83,8 +100,11 @@ public class PresenceSensor extends SmartDevice {
         });
     }
 
-    public static ArrayList<String> getIPs() {
-        return IPs;
+    /* ------------------------------------------------------ */
+    /* Setters and getters */
+
+    public CoapObserveRelation getObserveRelation() {
+        return observeRelation;
     }
 
     public int getID() {

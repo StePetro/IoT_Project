@@ -43,7 +43,7 @@ size_t max_char_len = 4;  // 100 + endstring
 
 /*---------------------------------------------------------------------------*/
 
-/* To get actual luminosity in room */
+/* To get actual luminosity value */
 static void res_get_handler(coap_message_t *request, coap_message_t *response,
                             uint8_t *buffer, uint16_t preferred_size,
                             int32_t *offset) {
@@ -79,16 +79,20 @@ static void res_put_handler(coap_message_t *request, coap_message_t *response,
   len = coap_get_post_variable(request, "bulb", &rcvd_msg);
 
   if (len > 0 && len <= max_char_len) {
+    // is a correct len
 
     memcpy(char_lum, rcvd_msg, len);
+    // convert to int
     int tmp_lum = atoi(char_lum);
 
     if (tmp_lum < 0 || tmp_lum > MAX_LUMINOSITY) {
+      // not a valid value [0,MAX_LUMINOSITY]
 
       LOG_INFO("Received invalid luminosity value\n");
       coap_set_status_code(response, BAD_REQUEST_4_00);
 
     } else {
+      // update lum value and notify change
 
       bulbs_luminosity = tmp_lum;
       actual_luminosity = bulbs_luminosity + external_luminosity;
@@ -110,6 +114,7 @@ static void res_put_handler(coap_message_t *request, coap_message_t *response,
     }
 
   } else {
+    // incorrect request 
 
     LOG_INFO("Bad Request\n");
     coap_set_status_code(response, BAD_REQUEST_4_00);

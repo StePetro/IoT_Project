@@ -10,17 +10,26 @@ import org.eclipse.californium.core.coap.MediaTypeRegistry;
 import register.Register;
 import uilities.OutputWindow;
 
+/* Every instance represent a real bulb device 
+   accessible via CoAP */
 public class Bulb extends SmartDevice {
-    // To interact with bulbs using coap
+
+    /* Bulb class variables */
 
     private static int bulbCount = 0;
+
+    // array of IPs for a quick access 
     private static ArrayList<String> IPs = new ArrayList<String>();
 
+    /* Single Bulb variables */
     private BulbSwitch bswitch;
     private BulbLuminosity luminosity;
     private String ip;
     private int id;
 
+    /* ------------------------------------------------------ */
+
+    /* Constructor */
     public Bulb(String ip) {
 
         this.ip = ip;
@@ -33,6 +42,9 @@ public class Bulb extends SmartDevice {
 
     }
 
+    /* ------------------------------------------------------ */
+    /* Static functions involving all bulbs */
+
     public static ArrayList<String> getIPs() {
         return IPs;
     }
@@ -41,6 +53,7 @@ public class Bulb extends SmartDevice {
         bulbCount = 0;
     }
 
+    /* Set all bulbs ON or OFF */
     public static void setAllSwitches(String status) {
 
         ArrayList<Bulb> bulbs = Register.getRegistredBulbs();
@@ -51,6 +64,7 @@ public class Bulb extends SmartDevice {
 
     }
 
+    /* Set all bulbs lum to passed value */
     public static void SetAllLuminosities(int amount) {
 
         ArrayList<Bulb> bulbs = Register.getRegistredBulbs();
@@ -66,6 +80,7 @@ public class Bulb extends SmartDevice {
 
     }
 
+    /* Set bulbs lum as to meet desired overhaul luminosity level */
     public static void setAllToDesiredLuminosity(int actualLum, int desiredLum) {
 
         if (Bulb.getCount() > 0) {
@@ -75,6 +90,7 @@ public class Bulb extends SmartDevice {
             int totalLum = 0;
             int externalMeanLum = 0;
 
+            /* Coherency mechanism explained in last section of the slides */
             for (Bulb bulb : bulbs) {
                 int bulbLum = bulb.getLuminosityResource().getValue();
                 int externLum = actualLum - bulbLum;
@@ -91,7 +107,6 @@ public class Bulb extends SmartDevice {
             int meanNewLuminosity = Math.round(totalLum / Bulb.getCount());
 
             for (LuminositySensor ls : lumSensors) {
-                /* for coherency */
                 // Sensor set bulb luminosity as the mean af all new luminosities to be more
                 // robust
                 ls.setBulbLuminosity(meanNewLuminosity);
@@ -109,6 +124,9 @@ public class Bulb extends SmartDevice {
         }
 
     }
+
+    /* ------------------------------------------------------ */
+    /* Getter */
 
     public int getID() {
         return id;
@@ -130,9 +148,13 @@ public class Bulb extends SmartDevice {
         return bulbCount;
     }
 
-    public class BulbSwitch {
-        // Represent switch resource
+    /* ------------------------------------------------------ */
 
+    /* Represent the bulb's switch resource
+       and all methods usable on it */
+    public class BulbSwitch {
+
+        // client connection to resource
         private CoapClient client;
 
         protected BulbSwitch(String ip) {
@@ -140,7 +162,7 @@ public class Bulb extends SmartDevice {
         }
 
         public void toggle() {
-            // ASYNC switch toggle
+            // ASYNC switch toggle 
             client.post(new CoapHandler() {
 
                 public void onLoad(CoapResponse response) {
@@ -189,9 +211,13 @@ public class Bulb extends SmartDevice {
 
     }
 
-    public class BulbLuminosity {
-        // Represent luminosity resource
+    /* ------------------------------------------------------ */
 
+    /* Represent the bulb's luminosity resource
+       and all methods usable on it */
+    public class BulbLuminosity {
+
+        // client connection to resource
         private CoapClient client;
         private int value = 0;
 

@@ -66,7 +66,7 @@ static void res_get_handler(coap_message_t *request, coap_message_t *response,
 
 /*---------------------------------------------------------------------------*/
 
-/* Switch ON <-> OFF */
+/* Toggle ON <-> OFF */
 static void res_post_handler(coap_message_t *request, coap_message_t *response,
                              uint8_t *buffer, uint16_t preferred_size,
                              int32_t *offset) {
@@ -80,6 +80,7 @@ static void res_post_handler(coap_message_t *request, coap_message_t *response,
     leds_set(LEDS_NUM_TO_MASK(LEDS_RED));
   }
 
+  // toggle
   status = !status;
 
   coap_set_status_code(response, CHANGED_2_04);
@@ -100,9 +101,11 @@ static void res_put_handler(coap_message_t *request, coap_message_t *response,
   len = coap_get_post_variable(request, "status", &rcvd_msg);
 
   if (len > 0 && len <= max_char_len) {
+    // correct len
     snprintf(char_on_off, max_char_len + 1, "%s", rcvd_msg);  // +1 = end string
 
     if (strcmp(char_on_off, "ON") == 0) {
+      // correct ON request, notify new status
       status = 1;
       LOG_INFO("Switch set to ON\n");
       leds_set(LEDS_NUM_TO_MASK(LEDS_GREEN));
@@ -121,6 +124,7 @@ static void res_put_handler(coap_message_t *request, coap_message_t *response,
     }
 
     if (strcmp(char_on_off, "OFF") == 0) {
+      // correct OFF request, notify new status
       status = 0;
       LOG_INFO("Switch set to OFF\n");
       leds_set(LEDS_NUM_TO_MASK(LEDS_RED));
@@ -138,6 +142,7 @@ static void res_put_handler(coap_message_t *request, coap_message_t *response,
     }
 
   } else {
+    // incorrect request
     LOG_INFO("Bad Request\n");
     coap_set_status_code(response, BAD_REQUEST_4_00);
   }

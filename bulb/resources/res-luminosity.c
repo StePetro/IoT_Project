@@ -67,17 +67,23 @@ static void res_post_handler(coap_message_t *request, coap_message_t *response,
   size_t len = 0;
   bool bad_request = true;
 
+  /* Check if is an increase (+) and a correct value*/
   len = coap_get_post_variable(request, "+", &rcvd_msg);
 
   if (len > 0 && len <= max_char_len) {
+    // correct char len
     memcpy(char_lum, rcvd_msg, len);
+    // convert to int
     int tmp_lum = lum + atoi(char_lum);
 
     if (tmp_lum < 0 || tmp_lum > max_lum) {
+      // check if new lum is in range [0,max_lum]
+      // an increase of -x (a decrease) is ok
       LOG_INFO("Received invalid luminosity value\n");
       coap_set_status_code(response, BAD_OPTION_4_02);
 
     } else {
+      // correct increase, set new value
       lum = tmp_lum;
       LOG_INFO("Luminosity increased to %u\n", lum);
       coap_set_status_code(response, CHANGED_2_04);
@@ -86,6 +92,8 @@ static void res_post_handler(coap_message_t *request, coap_message_t *response,
     bad_request = false;
   }
 
+  /* Check if is an decrease (-) and a correct value*/
+  // (same logic as increase)
   len = coap_get_post_variable(request, "-", &rcvd_msg);
 
   if (len > 0 && len <= max_char_len) {
@@ -106,9 +114,12 @@ static void res_post_handler(coap_message_t *request, coap_message_t *response,
   }
 
   if (bad_request) {
+    // incorrect request
     LOG_INFO("Bad Request\n");
     coap_set_status_code(response, BAD_REQUEST_4_00);
+
   } else {
+    // correct request, notify new lum value
     char msg[max_char_len];
     snprintf(msg, max_char_len, "%u", lum);
     size_t len = strlen(msg);
@@ -117,6 +128,7 @@ static void res_post_handler(coap_message_t *request, coap_message_t *response,
     coap_set_header_content_format(response, TEXT_PLAIN);
     coap_set_header_etag(response, (uint8_t *)&len, 1);
     coap_set_payload(response, buffer, len);
+
   }
 }
 
@@ -135,19 +147,22 @@ static void res_put_handler(coap_message_t *request, coap_message_t *response,
   len = coap_get_post_variable(request, "lum", &rcvd_msg);
 
   if (len > 0 && len <= max_char_len) {
+    // correct len
     memcpy(char_lum, rcvd_msg, len);
     int tmp_lum = atoi(char_lum);
 
     if (tmp_lum < 0 || tmp_lum > max_lum) {
+      // incorrect lum value
       LOG_INFO("Received invalid luminosity value\n");
       coap_set_status_code(response, BAD_REQUEST_4_00);
 
     } else {
+
+      /* Correct request, send new luminosity value in response */
       lum = tmp_lum;
       LOG_INFO("Luminosity set to %u\n", lum);
       coap_set_status_code(response, CHANGED_2_04);
 
-      /* Send new luminosity value in response */
       char msg[max_char_len];
       snprintf(msg, max_char_len, "%u", lum);
       size_t len = strlen(msg);
@@ -159,6 +174,7 @@ static void res_put_handler(coap_message_t *request, coap_message_t *response,
     }
 
   } else {
+    // incorrect request
     LOG_INFO("Bad Request\n");
     coap_set_status_code(response, BAD_REQUEST_4_00);
   }
