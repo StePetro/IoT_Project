@@ -19,8 +19,8 @@ static void res_get_handler(coap_message_t *request, coap_message_t *response,
 static void res_event_handler(void);
 
 EVENT_RESOURCE(res_presence, 
-               '</presence-sensor/presence>;title="Presence Sensor Value";
-               rt="presence";if="presence-sensor";obs', 
+               "</presence-sensor/presence>;title=\"Presence Sensor Value\";\
+               rt=\"presence\";if=\"presence-sensor\";obs", 
                res_get_handler, 
                NULL, 
                NULL, 

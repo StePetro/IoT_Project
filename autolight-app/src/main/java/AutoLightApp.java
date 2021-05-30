@@ -47,6 +47,7 @@ public class AutoLightApp {
 				System.out.println("Command list:");
 				System.out.println("- !exit|!quit: to exit");
 				System.out.println("- !reg: lists all registered devices");
+				System.out.println("- !info: refresh and get bulbs info");
 				System.out.println("- !mode [manual|auto]: to pass to manual/automatic mode");
 				System.out.println("- !des_lum [value]: to set desired luminosity value");
 				System.out.println("- !sw [Bulb ID] [ON|OFF]: to switch bulb on or off");
@@ -60,15 +61,26 @@ public class AutoLightApp {
 			if (command.equals("!reg")) {
 				System.out.println("Registred BULBS:");
 				for (Bulb b : Register.getRegistredBulbs()) {
-					System.out.println("- ID: " + b.getID() + " , IP: " + b.getIP());
+					System.out.println("- ID: " + b.getID() + ", IP: " + b.getIP());
 				}
 				System.out.println("Registred PRESENCE SENSORS:");
 				for (PresenceSensor ps : Register.getRegistredPresenceSensors()) {
-					System.out.println("- ID: " + ps.getID() + " , IP: " + ps.getIP());
+					System.out.println("- ID: " + ps.getID() + ", IP: " + ps.getIP());
 				}
 				System.out.println("Registred LUMINOSITY SENSORS:");
 				for (LuminositySensor ls : Register.getRegistredLuminositySensors()) {
-					System.out.println("- ID: " + ls.getID() + " , IP: " + ls.getIP());
+					System.out.println("- ID: " + ls.getID() + ", IP: " + ls.getIP());
+				}
+				continue;
+			}
+
+			if (command.equals("!info")) {
+				System.out.println("BULBS info:");
+				for (Bulb b : Register.getRegistredBulbs()) {
+					b.getLuminosityResource().get();
+					b.getSwitchResource().get();
+					System.out.println("- BULB ID: " + b.getID() + ", LUM: " + b.getLuminosityResource().getValue()
+					+ ", SWITCH: " + b.getSwitchResource().getValue());
 				}
 				continue;
 			}

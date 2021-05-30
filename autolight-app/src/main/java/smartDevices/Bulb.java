@@ -156,9 +156,14 @@ public class Bulb extends SmartDevice {
 
         // client connection to resource
         private CoapClient client;
+        private String value = "ND";
 
         protected BulbSwitch(String ip) {
             client = new CoapClient("coap://[" + ip + "]/switch");
+        }
+
+        public String getValue() {
+            return value;
         }
 
         public void toggle() {
@@ -166,8 +171,8 @@ public class Bulb extends SmartDevice {
             client.post(new CoapHandler() {
 
                 public void onLoad(CoapResponse response) {
-                    String content = response.getResponseText();
-                    OutputWindow.getLog().println("[INFO: BULB " + ip + "] Switch toggle response: " + content);
+                    value = response.getResponseText();
+                    OutputWindow.getLog().println("[INFO: BULB " + ip + "] Switch toggle response: " + value);
                 }
 
                 public void onError() {
@@ -182,8 +187,8 @@ public class Bulb extends SmartDevice {
             client.get(new CoapHandler() {
 
                 public void onLoad(CoapResponse response) {
-                    String content = response.getResponseText();
-                    OutputWindow.getLog().println("[INFO: BULB " + ip + "] Switch get response: " + content);
+                    value = response.getResponseText();
+                    OutputWindow.getLog().println("[INFO: BULB " + ip + "] Switch get response: " + value);
                 }
 
                 public void onError() {
@@ -198,8 +203,8 @@ public class Bulb extends SmartDevice {
             client.put(new CoapHandler() {
 
                 public void onLoad(CoapResponse response) {
-                    String content = response.getResponseText();
-                    OutputWindow.getLog().println("[INFO: BULB " + ip + "] Switch set response: " + content);
+                    value = response.getResponseText();
+                    OutputWindow.getLog().println("[INFO: BULB " + ip + "] Switch set response: " + value);
                 }
 
                 public void onError() {

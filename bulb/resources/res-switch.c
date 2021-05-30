@@ -28,7 +28,7 @@ static void res_put_handler(coap_message_t *request, coap_message_t *response,
                             int32_t *offset);
 
 RESOURCE(res_switch, 
-         '</bulb/switch>;title="Bulb Switch";rt="switch";if="bulb"', 
+         "</bulb/switch>;title=\"Bulb Switch\";rt=\"switch\";if=\"bulb\"", 
          res_get_handler, 
          res_post_handler, 
          res_put_handler,
