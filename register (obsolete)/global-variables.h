@@ -1,1 +1,0 @@
-extern bool new_registration;
